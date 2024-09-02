@@ -18,7 +18,7 @@ public record HardwareIdentifyPacket(HardwareIdentifyData data) implements Custo
     }
 
     private static HardwareIdentifyPacket decode(FriendlyByteBuf buf) {
-        return new HardwareIdentifyPacket(PacketIO.decode(buf));
+        return new HardwareIdentifyPacket(new HardwareIdentifyData("dum"));
     }
 
     private void encode(FriendlyByteBuf buf) {

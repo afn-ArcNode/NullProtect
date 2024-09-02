@@ -15,10 +15,25 @@ public class PacketIO {
         buf.writeBytes(bytes);
     }
 
+    public static byte[] dummy() {
+        byte[] dum = new byte[16];
+        ByteBuf bb = Unpooled.wrappedBuffer(dum);
+        bb.writerIndex(0);
+        encode(bb, new HardwareIdentifyData(""));
+        return dum;
+    }
+
     public static HardwareIdentifyData decode(ByteBuf buf) {
         int length = buf.readInt();
         byte[] bytes = new byte[length];
         buf.readBytes(bytes);
+        buf.readBytes(buf.readableBytes());
         return new HardwareIdentifyData(new String(bytes, StandardCharsets.UTF_8));
+    }
+
+    public static HardwareIdentifyData decode(byte[] data) {
+        ByteBuf bb = Unpooled.copiedBuffer(data);
+        bb.readerIndex(0);
+        return decode(bb);
     }
 }

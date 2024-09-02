@@ -41,3 +41,4 @@ bin/
 ### Minecraft ###
 mod/fabric/run
 mod/neoforge/run
+server/run
