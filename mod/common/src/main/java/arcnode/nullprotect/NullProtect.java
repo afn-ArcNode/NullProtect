@@ -1,6 +1,6 @@
-package com.example;
+package arcnode.nullprotect;
 
-public final class ExampleMod {
+public final class NullProtect {
     public static final String MOD_ID = "nullprotect";
 
     public static void init() {

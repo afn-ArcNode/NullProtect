@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "com.example.mixin",
+  "package": "arcnode.nullprotect.mixin",
   "compatibilityLevel": "JAVA_21",
   "minVersion": "0.8",
   "client": [

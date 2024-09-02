@@ -15,11 +15,8 @@
   "icon": "assets/nullprotect/icon.png",
   "environment": "*",
   "entrypoints": {
-    "main": [
-      "com.example.fabric.ExampleModFabric"
-    ],
     "client": [
-      "com.example.fabric.client.ExampleModFabricClient"
+      "arcnode.nullprotect.fabric.NullProtectFabric"
     ]
   },
   "mixins": [

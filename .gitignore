@@ -37,3 +37,7 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Minecraft ###
+mod/fabric/run
+mod/neoforge/run
