@@ -1,9 +1,9 @@
 dependencies {
     compileOnly project(":server:common")
-    compileOnly "io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT"
-    compileOnly 'com.github.retrooper:packetevents-spigot:2.4.0'
+    compileOnly libs.paper.api
+    compileOnly libs.packetevents.spigot
 
-    include 'cn.afternode.commons:bukkit:2.6.0-SNAPSHOT'
+    include libs.afternode.bukkit
 }
 
 processResources {
