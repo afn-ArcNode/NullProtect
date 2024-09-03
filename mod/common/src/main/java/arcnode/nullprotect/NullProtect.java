@@ -35,8 +35,9 @@ public final class NullProtect {
                     sb.append(pp.getIdString());
                 }
 
-                hwidStr = Hashing.goodFastHash(64).hashString(sb.toString(), StandardCharsets.UTF_8)
-                        .toString();
+                hwidStr = Hashing.sha256().hashString(sb.toString(), StandardCharsets.UTF_8)
+                        .toString()
+                        .substring(0, 32);
             } catch (Throwable t) {
                 throw new RuntimeException("Unable to calculate HWID", t);
             }
