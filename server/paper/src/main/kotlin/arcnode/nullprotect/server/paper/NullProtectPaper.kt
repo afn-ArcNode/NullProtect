@@ -6,9 +6,14 @@ import arcnode.nullprotect.server.paper.network.NetworkManager
 import cn.afternode.commons.bukkit.BukkitPluginContext
 import cn.afternode.commons.bukkit.kotlin.message
 import com.github.retrooper.packetevents.resources.ResourceLocation
+import kotlinx.coroutines.runBlocking
 import org.bukkit.Bukkit
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.LinkedBlockingDeque
+import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 val hwidChannel by lazy { ResourceLocation(PacketIO.NAMESPACE, PacketIO.PATH_HWID) }
@@ -25,6 +30,21 @@ class NullProtectPaper: JavaPlugin() {
         private set
     lateinit var network: NetworkManager
         private set
+
+    lateinit var executor: ExecutorService
+        private set
+
+    // Configurations
+    val hwidEnabled by lazy { this.conf.getBoolean("hwid.enabled") }
+    val hwidCheckInterval by lazy { this.conf.getInt("hwid.check-interval") }
+    val hwidCheckTimeout by lazy { this.conf.getInt("hwid.timeout") }
+    val hwidMatchMode by lazy { when (this.conf.getString("hwid.mode") ?: "none") {
+        "none" -> 0
+        "whitelist" -> 1
+        "blacklist" -> 2
+        else -> 0
+    } }
+    val hwidOnBlackListOp by lazy { this.conf.getStringList("hwid.on-blacklist") }
 
     override fun onLoad() {
         plugin = this
@@ -44,14 +64,24 @@ class NullProtectPaper: JavaPlugin() {
             throw RuntimeException("Unable to upgrade/read configuration", t)
         }
 
+        // Thread pool
+        log.info("Starting thread pool")
+        val threadPoolSettings = this.conf.getConfigurationSection("async") ?: throw NullPointerException("async @ config.yml")
+        if (threadPoolSettings.getString("mode") == "virtual") {
+            this.executor = Executors.newVirtualThreadPerTaskExecutor()
+        } else {
+            this.executor = ThreadPoolExecutor(threadPoolSettings.getInt("core", 10), threadPoolSettings.getInt("max", 30), 30, TimeUnit.SECONDS, LinkedBlockingDeque())
+        }
+
         try {   // Database
             log.info("Setting up database")
             val sec = conf.getConfigurationSection("database") ?: throw NullPointerException("database @ config.yml")
             val type = sec.getString("type") ?: "SQLite"
             if (type.equals("SQLite", ignoreCase = true)) {
-                this.database = DatabaseManager("jdbc:sqlite:./plugins/${this.name}/data")
+                this.database = DatabaseManager(this.executor, "jdbc:sqlite:./plugins/${this.name}/data")
             } else if (type.equals("MySQL", ignoreCase = true)) {
                 this.database = DatabaseManager(
+                    this.executor,
                     "jdbc:mysql://${sec.getString("host") ?: throw NullPointerException("database.host @ config.yml")}:${sec.getInt("port", 3306)}/${sec.getString("database") ?: throw NullPointerException ("database.database @ config.yml")}",
                     sec.getString("username") ?: throw NullPointerException("database.username @ config.yml") ,
                     sec.getString("password") ?: "database.password @ config.yml"
@@ -65,6 +95,10 @@ class NullProtectPaper: JavaPlugin() {
         this.network = NetworkManager()
         Bukkit.getMessenger().registerIncomingPluginChannel(this, hwidChannelStr, this.network)
         Bukkit.getPluginManager().registerEvents(this.network, this)
-        Bukkit.getAsyncScheduler().runAtFixedRate(this, network::runHwidCheck, 1, 10, TimeUnit.SECONDS)
+        if (this.hwidEnabled)   // Hwid checker
+            Bukkit.getAsyncScheduler().runAtFixedRate(this, network::runHwidCheck, 1, 10, TimeUnit.SECONDS)
     }
+
+    fun runAsync(runnable: () -> Unit) = this.executor.execute(runnable)
+    fun runBlockingCoroutine(runnable: suspend () -> Unit) = this.runAsync { runBlocking { runnable() } }
 }

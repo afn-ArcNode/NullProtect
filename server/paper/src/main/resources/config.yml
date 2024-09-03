@@ -7,3 +7,27 @@ database:
   username: NullProtect
   password: NullProtect
   database: NullProtect
+
+# Thread pool settings
+async:
+  # fixed or virtual
+  mode: fixed
+
+  # Core pool size
+  core: 10
+  # Max threads
+  max: 30
+
+hwid:
+  enabled: false
+
+  # Timeout check interval (seconds)
+  check-interval: 10
+  # Timeout (seconds)
+  timeout: 10
+
+  # whitelist or blacklist or none
+  mode: none
+  # Commands to execute on blacklist triggered or added when target player is online
+  on-blacklist:
+    - "ban %player% HWID banned from this server"

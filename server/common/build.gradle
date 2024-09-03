@@ -1,6 +1,8 @@
 dependencies {
+    compileOnly libs.guava
+
     include libs.hikaricp
 
-    include 'org.jetbrains.exposed:exposed-core:0.54.0'
-    include 'org.jetbrains.exposed:exposed-jdbc:0.54.0'
+    include libs.exposed.core
+    include libs.exposed.jdbc
 }

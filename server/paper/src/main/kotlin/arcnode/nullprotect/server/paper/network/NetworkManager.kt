@@ -30,16 +30,19 @@ class NetworkManager: Listener, PluginMessageListener {
             if (!rtHwid.containsKey(player.uniqueId) && now - player.lastLogin > 10000) {   // Timed out
                 player.scheduler    // Folia compatibility
                     .run(plugin, { player.kick(Component.text("Verification timed out")) }, {})
+                plugin.slF4JLogger.info("${player.name}: HWID verification timed out")
             }
         }
     }
 
     @EventHandler
     fun onPlayerJoin(e: PlayerJoinEvent) {  // Send request
-        PacketEvents.getAPI().playerManager.sendPacket(e.player, WrapperPlayServerPluginMessage(
-            hwidChannel,
-            dummyPacket
-        ))
+        if (plugin.hwidEnabled) {
+            PacketEvents.getAPI().playerManager.sendPacket(e.player, WrapperPlayServerPluginMessage(
+                hwidChannel,
+                dummyPacket
+            ))
+        }
     }
 
     @EventHandler
@@ -49,20 +52,47 @@ class NetworkManager: Listener, PluginMessageListener {
 
     override fun onPluginMessageReceived(channel: String, player: Player, message: ByteArray) {
         if (channel == hwidChannelStr) {    // HWID packet
-            if (rtHwid.containsKey(player.uniqueId)) {  // Duplicate
-                plugin.slF4JLogger.warn("Duplicate HWID packet received from ${player.name}")
+            if (plugin.hwidEnabled)
+                this.handleHwid(player, message)
+        }
+    }
+
+    private fun handleHwid(player: Player, message: ByteArray) {
+        if (rtHwid.containsKey(player.uniqueId)) {  // Duplicate
+            plugin.slF4JLogger.warn("Duplicate HWID packet received from ${player.name}")
+            player.scheduler.run(plugin, {
+                player.kick(Component.text("Invalid packet received")) }, {})
+        } else {
+            val dec = PacketIO.decode(message)
+            if (dec.value.length == 32) {   // Valid
+                this.rtHwid[player.uniqueId] = dec.value
+                plugin.slF4JLogger.info("HWID of ${player.name} is ${dec.value}")
+
+                // Async database operation
+                if (plugin.hwidMatchMode != 0) {
+                    plugin.runBlockingCoroutine {
+                        val exists = plugin.database.whiteOrBlackList.exists(dec.value)
+                        if (plugin.hwidMatchMode == 1 && !exists) { // Whitelist
+                            player.scheduler.run(plugin, {
+                                player.kick(Component.text("You are not whitelisted on this server!"))
+                            }, {})
+                        } else if (plugin.hwidMatchMode == 2 && exists) {   // Blacklist
+                            player.scheduler.run(plugin, {
+                                player.kick(Component.text("You are blacklisted on this server!"))
+                            }, {})
+                            Bukkit.getGlobalRegionScheduler().run(plugin) {
+                                val exec = Bukkit.getConsoleSender()
+                                for (cmd in plugin.hwidOnBlackListOp) {
+                                    Bukkit.dispatchCommand(exec, cmd.replace("%player%", player.name))
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {    // Large HWID
+                plugin.slF4JLogger.warn("Invalid HWID packet received from ${player.name} (length: ${dec.value})")
                 player.scheduler.run(plugin, {
                     player.kick(Component.text("Invalid packet received")) }, {})
-            } else {
-                val dec = PacketIO.decode(message)
-                if (dec.value.length == 32) {   // Valid
-                    this.rtHwid[player.uniqueId] = dec.value
-                    plugin.slF4JLogger.info("HWID of ${player.name} is ${dec.value}")
-                } else {    // Large HWID
-                    plugin.slF4JLogger.warn("Invalid HWID packet received from ${player.name} (length: ${dec.value})")
-                    player.scheduler.run(plugin, {
-                        player.kick(Component.text("Invalid packet received")) }, {})
-                }
             }
         }
     }
