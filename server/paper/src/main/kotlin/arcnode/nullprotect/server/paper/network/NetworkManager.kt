@@ -27,7 +27,7 @@ class NetworkManager: Listener, PluginMessageListener {
         val now = System.currentTimeMillis()
 
         for (player in Bukkit.getOnlinePlayers()) {
-            if (!rtHwid.containsKey(player.uniqueId) && now - player.lastLogin > 10000) {   // Timed out
+            if (!rtHwid.containsKey(player.uniqueId) && now - player.lastLogin > plugin.hwidCheckTimeout) {   // Timed out
                 player.scheduler    // Folia compatibility
                     .run(plugin, { player.kick(Component.text("Verification timed out")) }, {})
                 plugin.slF4JLogger.info("${player.name}: HWID verification timed out")

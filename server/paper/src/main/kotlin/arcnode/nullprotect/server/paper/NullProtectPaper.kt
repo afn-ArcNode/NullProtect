@@ -36,14 +36,14 @@ class NullProtectPaper: JavaPlugin() {
 
     // Configurations
     val hwidEnabled by lazy { this.conf.getBoolean("hwid.enabled") }
-    val hwidCheckInterval by lazy { this.conf.getInt("hwid.check-interval") }
-    val hwidCheckTimeout by lazy { this.conf.getInt("hwid.timeout") }
+    val hwidCheckInterval by lazy { this.conf.getInt("hwid.check-interval") }   // seconds
+    val hwidCheckTimeout by lazy { this.conf.getInt("hwid.timeout")*1000 }  // millis
     val hwidMatchMode by lazy { when (this.conf.getString("hwid.mode") ?: "none") {
         "none" -> 0
         "whitelist" -> 1
         "blacklist" -> 2
         else -> 0
-    } }
+    } } // 0-none 1-whitelist 2-blacklist
     val hwidOnBlackListOp by lazy { this.conf.getStringList("hwid.on-blacklist") }
 
     override fun onLoad() {
@@ -96,7 +96,7 @@ class NullProtectPaper: JavaPlugin() {
         Bukkit.getMessenger().registerIncomingPluginChannel(this, hwidChannelStr, this.network)
         Bukkit.getPluginManager().registerEvents(this.network, this)
         if (this.hwidEnabled)   // Hwid checker
-            Bukkit.getAsyncScheduler().runAtFixedRate(this, network::runHwidCheck, 1, 10, TimeUnit.SECONDS)
+            Bukkit.getAsyncScheduler().runAtFixedRate(this, network::runHwidCheck, 1, this.hwidCheckInterval.toLong(), TimeUnit.SECONDS)
     }
 
     fun runAsync(runnable: () -> Unit) = this.executor.execute(runnable)
