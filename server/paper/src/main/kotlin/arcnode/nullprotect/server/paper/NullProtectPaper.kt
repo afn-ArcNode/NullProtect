@@ -2,6 +2,7 @@ package arcnode.nullprotect.server.paper
 
 import arcnode.nullprotect.network.PacketIO
 import arcnode.nullprotect.server.DatabaseManager
+import arcnode.nullprotect.server.paper.commands.MainCommand
 import arcnode.nullprotect.server.paper.network.NetworkManager
 import cn.afternode.commons.bukkit.BukkitPluginContext
 import cn.afternode.commons.bukkit.kotlin.message
@@ -97,6 +98,8 @@ class NullProtectPaper: JavaPlugin() {
         Bukkit.getPluginManager().registerEvents(this.network, this)
         if (this.hwidEnabled)   // Hwid checker
             Bukkit.getAsyncScheduler().runAtFixedRate(this, network::runHwidCheck, 1, this.hwidCheckInterval.toLong(), TimeUnit.SECONDS)
+
+        MainCommand.register("nullprotect")
     }
 
     fun runAsync(runnable: () -> Unit) = this.executor.execute(runnable)
