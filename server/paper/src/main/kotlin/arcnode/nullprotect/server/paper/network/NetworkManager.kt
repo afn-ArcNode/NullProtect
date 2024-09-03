@@ -1,7 +1,6 @@
 package arcnode.nullprotect.server.paper.network
 
 import arcnode.nullprotect.network.PacketIO
-import arcnode.nullprotect.server.paper.NullProtectPaper
 import arcnode.nullprotect.server.paper.hwidChannel
 import arcnode.nullprotect.server.paper.hwidChannelStr
 import arcnode.nullprotect.server.paper.plugin
@@ -14,6 +13,7 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.messaging.PluginMessageListener
 import java.util.*
 
@@ -35,21 +35,34 @@ class NetworkManager: Listener, PluginMessageListener {
     }
 
     @EventHandler
-    fun onPlayerJoin(e: PlayerJoinEvent) {
+    fun onPlayerJoin(e: PlayerJoinEvent) {  // Send request
         PacketEvents.getAPI().playerManager.sendPacket(e.player, WrapperPlayServerPluginMessage(
             hwidChannel,
             dummyPacket
         ))
     }
 
+    @EventHandler
+    fun onPlayerQuit(e: PlayerQuitEvent) {  // Remove on exit
+        rtHwid.remove(e.player.uniqueId)
+    }
+
     override fun onPluginMessageReceived(channel: String, player: Player, message: ByteArray) {
         if (channel == hwidChannelStr) {    // HWID packet
-            if (rtHwid.containsKey(player.uniqueId)) {  // Invalid
-
+            if (rtHwid.containsKey(player.uniqueId)) {  // Duplicate
+                plugin.slF4JLogger.warn("Duplicate HWID packet received from ${player.name}")
+                player.scheduler.run(plugin, {
+                    player.kick(Component.text("Invalid packet received")) }, {})
             } else {
                 val dec = PacketIO.decode(message)
-                this.rtHwid[player.uniqueId] = dec.value
-                plugin.slF4JLogger.info("HWID of ${player.name} is ${dec.value}")
+                if (dec.value.length == 32) {   // Valid
+                    this.rtHwid[player.uniqueId] = dec.value
+                    plugin.slF4JLogger.info("HWID of ${player.name} is ${dec.value}")
+                } else {    // Large HWID
+                    plugin.slF4JLogger.warn("Invalid HWID packet received from ${player.name} (length: ${dec.value})")
+                    player.scheduler.run(plugin, {
+                        player.kick(Component.text("Invalid packet received")) }, {})
+                }
             }
         }
     }
