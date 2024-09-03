@@ -1,6 +1,7 @@
 package arcnode.nullprotect.fabric;
 
-import arcnode.nullprotect.HardwareIdentifyPacket;
+import arcnode.nullprotect.HardwareIdentifyRequestPacket;
+import arcnode.nullprotect.HardwareIdentifyResponsePacket;
 import arcnode.nullprotect.NullProtect;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -11,9 +12,9 @@ public final class NullProtectFabric implements ClientModInitializer {
     public void onInitializeClient() {
         // This entrypoint is suitable for setting up client-specific logic, such as rendering.
 
-        PayloadTypeRegistry.playC2S().register(HardwareIdentifyPacket.TYPE, HardwareIdentifyPacket.CODEC);
-        PayloadTypeRegistry.playS2C().register(HardwareIdentifyPacket.TYPE, HardwareIdentifyPacket.CODEC);
-        ClientPlayNetworking.registerGlobalReceiver(HardwareIdentifyPacket.TYPE, (p, c) -> {
+        PayloadTypeRegistry.playC2S().register(HardwareIdentifyResponsePacket.TYPE, HardwareIdentifyResponsePacket.CODEC);
+        PayloadTypeRegistry.playS2C().register(HardwareIdentifyRequestPacket.TYPE, HardwareIdentifyRequestPacket.CODEC);
+        ClientPlayNetworking.registerGlobalReceiver(HardwareIdentifyRequestPacket.TYPE, (p, c) -> {
             c.player().connection.send(NullProtect.getHwidPacket());
         });
     }

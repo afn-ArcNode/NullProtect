@@ -7,7 +7,8 @@ import java.nio.charset.StandardCharsets;
 
 public class PacketIO {
     public static final String NAMESPACE = "nullprotect";
-    public static final String PATH_HWID = "hwid";
+    public static final String PATH_HWID_REQUEST = "hwid/request";
+    public static final String PATH_HWID_RESPONSE = "hwid/response";
 
     public static void encode(ByteBuf buf, HardwareIdentifyData data) {
         byte[] bytes = data.value().getBytes(StandardCharsets.UTF_8);

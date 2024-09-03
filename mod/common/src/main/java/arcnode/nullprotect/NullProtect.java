@@ -2,7 +2,6 @@ package arcnode.nullprotect;
 
 import arcnode.nullprotect.network.HardwareIdentifyData;
 import com.google.common.hash.Hashing;
-import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
@@ -47,7 +46,7 @@ public final class NullProtect {
 
     public static ServerboundCustomPayloadPacket getHwidPacket() {
         return new ServerboundCustomPayloadPacket(
-                new HardwareIdentifyPacket(
+                new HardwareIdentifyResponsePacket(
                         new HardwareIdentifyData(
                                 getHwidString()
                         )

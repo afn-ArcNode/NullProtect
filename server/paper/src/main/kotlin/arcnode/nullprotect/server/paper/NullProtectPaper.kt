@@ -17,8 +17,10 @@ import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
-val hwidChannel by lazy { ResourceLocation(PacketIO.NAMESPACE, PacketIO.PATH_HWID) }
-val hwidChannelStr by lazy { hwidChannel.toString() }
+val hwidChannelReq by lazy { ResourceLocation(PacketIO.NAMESPACE, PacketIO.PATH_HWID_REQUEST) }
+val hwidChannelReqStr by lazy { hwidChannelReq.toString() }
+val hwidChannelResp by lazy { ResourceLocation(PacketIO.NAMESPACE, PacketIO.PATH_HWID_RESPONSE) }
+val hwidChannelRespStr by lazy { hwidChannelResp.toString() }
 
 lateinit var plugin: NullProtectPaper
     private set
@@ -94,7 +96,7 @@ class NullProtectPaper: JavaPlugin() {
 
         // Register networking
         this.network = NetworkManager()
-        Bukkit.getMessenger().registerIncomingPluginChannel(this, hwidChannelStr, this.network)
+        Bukkit.getMessenger().registerIncomingPluginChannel(this, hwidChannelRespStr, this.network)
         Bukkit.getPluginManager().registerEvents(this.network, this)
         if (this.hwidEnabled)   // Hwid checker
             Bukkit.getAsyncScheduler().runAtFixedRate(this, network::runHwidCheck, 1, this.hwidCheckInterval.toLong(), TimeUnit.SECONDS)

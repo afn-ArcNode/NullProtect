@@ -1,8 +1,9 @@
 package arcnode.nullprotect.server.paper.network
 
 import arcnode.nullprotect.network.PacketIO
-import arcnode.nullprotect.server.paper.hwidChannel
-import arcnode.nullprotect.server.paper.hwidChannelStr
+import arcnode.nullprotect.server.paper.hwidChannelReq
+import arcnode.nullprotect.server.paper.hwidChannelReqStr
+import arcnode.nullprotect.server.paper.hwidChannelRespStr
 import arcnode.nullprotect.server.paper.plugin
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPluginMessage
@@ -39,7 +40,7 @@ class NetworkManager: Listener, PluginMessageListener {
     fun onPlayerJoin(e: PlayerJoinEvent) {  // Send request
         if (plugin.hwidEnabled) {
             PacketEvents.getAPI().playerManager.sendPacket(e.player, WrapperPlayServerPluginMessage(
-                hwidChannel,
+                hwidChannelReq,
                 dummyPacket
             ))
         }
@@ -51,7 +52,7 @@ class NetworkManager: Listener, PluginMessageListener {
     }
 
     override fun onPluginMessageReceived(channel: String, player: Player, message: ByteArray) {
-        if (channel == hwidChannelStr) {    // HWID packet
+        if (channel == hwidChannelRespStr) {    // HWID packet
             if (plugin.hwidEnabled)
                 this.handleHwid(player, message)
         }
