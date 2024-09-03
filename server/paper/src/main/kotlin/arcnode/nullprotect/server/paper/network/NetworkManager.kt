@@ -24,6 +24,15 @@ class NetworkManager: Listener, PluginMessageListener {
 
     operator fun get(id: UUID): String? = rtHwid[id]
 
+    fun getPlayerByHwid(hwid: String): List<Player> {
+        val results = mutableListOf<Player>()
+        for (entry in rtHwid) {
+            if (entry.value == hwid)
+                Bukkit.getPlayer(entry.key)?.let { results.add(it) }
+        }
+        return results.toList()
+    }
+
     fun runHwidCheck(tk: ScheduledTask) {
         val now = System.currentTimeMillis()
 

@@ -1,7 +1,9 @@
 package arcnode.nullprotect.server
 
 import com.google.common.cache.CacheBuilder
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import java.util.concurrent.TimeUnit
@@ -33,6 +35,12 @@ class WhiteOrBlackListDatabase(private val db: DatabaseManager) {
                 it[WhiteOrBlackListTable.hwid] = hwid
             }
         this@WhiteOrBlackListDatabase.cache.put(hwid, true) // Update cache (Added)
+    }
+
+    suspend fun remove(hwid: String) = db.use {
+        WhiteOrBlackListTable
+            .deleteWhere { WhiteOrBlackListTable.hwid eq hwid }
+        this@WhiteOrBlackListDatabase.cache.put(hwid, false)    // Update cache (removed)
     }
 
     fun clearCache() = this.cache.invalidateAll()
