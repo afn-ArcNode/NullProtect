@@ -3,6 +3,7 @@ import xyz.jpenilla.runtask.task.AbstractRun
 plugins {
     id 'com.gradleup.shadow'
     id "xyz.jpenilla.run-paper" version "2.3.1"
+    id 'org.jetbrains.kotlin.jvm' version "2.0.20"
 }
 
 configurations {
@@ -11,6 +12,8 @@ configurations {
 }
 
 subprojects {
+    plugins.apply("org.jetbrains.kotlin.jvm")
+
     configurations {
         include
         implementation.extendsFrom(include)
@@ -24,6 +27,7 @@ subprojects {
 
     dependencies {
         api project(":base")
+        include "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     }
 }
 
@@ -60,4 +64,10 @@ tasks.withType(AbstractRun) {
         languageVersion = JavaLanguageVersion.of(21)
     }
     jvmArgs("-XX:+AllowEnhancedClassRedefinition", "-Djava.net.useSystemProxies")
+}
+repositories {
+    mavenCentral()
+}
+kotlin {
+    jvmToolchain(21)
 }

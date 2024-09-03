@@ -12,3 +12,4 @@ hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
 paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
 packetevents-spigot = { module = "com.github.retrooper:packetevents-spigot", version.ref = "packetevents" }
 afternode-bukkit = { module = "cn.afternode.commons:bukkit", version.ref = "afternode" }
+afternode-bukkitKt = { module = "cn.afternode.commons:bukkit-kotlin", version.ref = "afternode" }

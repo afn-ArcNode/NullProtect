@@ -4,6 +4,7 @@ dependencies {
     compileOnly libs.packetevents.spigot
 
     include libs.afternode.bukkit
+    include libs.afternode.bukkitKt
 }
 
 processResources {
