@@ -1,6 +1,7 @@
 package arcnode.nullprotect.server.paper.commands
 
 import arcnode.nullprotect.server.paper.plugin
+import arcnode.nullprotect.server.paper.utils.runOnScheduler
 import cn.afternode.commons.bukkit.kotlin.*
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
@@ -146,9 +147,9 @@ object MainCommand: BaseCommand("nullprotect") {
                         if (plugin.hwidMatchMode == 1) {
                             val players = plugin.network.getPlayerByHwid(hwid)
                             if (players.isNotEmpty()) {
-                                Bukkit.getGlobalRegionScheduler().run(plugin) {
-                                    for (player in players) {
-                                        plugin.slF4JLogger.info("(${sender.name}) Kicking player \"${player.name}\" due to blacklist/whitelist change")
+                                for (player in players) {
+                                    plugin.slF4JLogger.info("(${sender.name}) Kicking player \"${player.name}\" due to blacklist/whitelist change")
+                                    player.runOnScheduler {
                                         player.kick(Component.text("You are not whitelisted on this server!"))
                                     }
                                 }
