@@ -235,7 +235,7 @@ object MainCommand: BaseCommand("nullprotect") {
 
     override fun tab(sender: CommandSender, vararg args: String): MutableList<String> = commandSuggestion {
         if (args.size == 1) {
-            add(args[0], "refreshCaches", "info", "activation")
+            add(args[0], "refreshCaches", "hwid", "info", "activation")
         } else if (args.size == 2) {
             if (args[0] == "info")
                 players(args[1])
