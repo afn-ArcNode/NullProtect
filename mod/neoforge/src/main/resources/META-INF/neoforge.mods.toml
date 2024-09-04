@@ -1,15 +1,15 @@
 modLoader = "javafml"
 loaderVersion = "[4,)"
 #issueTrackerURL = ""
-license = "Insert License Here"
+license = "Apache-2.0"
 
 [[mods]]
 modId = "nullprotect"
 version = "${version}"
 displayName = "NullProtect"
-authors = "Me!"
+authors = "ArcNode"
 description = '''
-This is an example description! Tell everyone what your mod is about!
+Server protection suit
 '''
 #logoFile = ""
 
