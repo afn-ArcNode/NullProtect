@@ -41,10 +41,25 @@ shadowJar {
 
     dependencies {
         exclude dependency('org.slf4j:slf4j-api')
+        exclude dependency("org.jetbrains:annotations")
     }
 
-    relocate "com.zaxxer.hikari", "arcnode.nullprotect.server.libs.hikari"
-    relocate "cn.afternode", "arcnode.nullprotect.server.libs.afternode"
+    def rel = "arcnode.nullprotect.server.libs"
+    relocate "com.zaxxer.hikari", "${rel}.hikari"
+    relocate "cn.afternode", "${rel}.afternode"
+    relocate "kotlinx", "${rel}.kotlinx"
+    relocate "kotlin", "${rel}.kotlin"
+    relocate "org.jetbrains.exposed", "${rel}.exposed"
+    relocate "_COROUTINE", "${rel}._COROUTINE"
+
+    exclude("DebugProbesKt.bin", "META-INF/*.kotlin_module")
+    minimize {
+        exclude dependency(libs.exposed.jdbc.get())
+        exclude dependency(libs.exposed.core.get())
+        exclude project(":server:paper")
+        exclude project(":server:common")
+    }
+    mergeServiceFiles()
 }
 
 runServer {
