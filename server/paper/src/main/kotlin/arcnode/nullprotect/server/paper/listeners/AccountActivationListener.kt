@@ -38,7 +38,7 @@ import java.util.UUID
 object AccountActivationListener: Listener {
     private val act = HashMap<UUID, Boolean>()
 
-    val conf by lazy { plugin.activationConfig }
+    private val conf by lazy { plugin.activationConfig }
 
     fun runActCheck(tk: ScheduledTask) {
         val now = System.currentTimeMillis()

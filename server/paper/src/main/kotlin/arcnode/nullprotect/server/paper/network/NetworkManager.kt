@@ -18,7 +18,6 @@ package arcnode.nullprotect.server.paper.network
 
 import arcnode.nullprotect.network.PacketIO
 import arcnode.nullprotect.server.paper.hwidChannelReq
-import arcnode.nullprotect.server.paper.hwidChannelReqStr
 import arcnode.nullprotect.server.paper.hwidChannelRespStr
 import arcnode.nullprotect.server.paper.plugin
 import com.github.retrooper.packetevents.PacketEvents

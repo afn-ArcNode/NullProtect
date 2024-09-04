@@ -66,7 +66,7 @@ class NullProtectPaper: JavaPlugin() {
         "blacklist" -> 2
         else -> 0
     } } // 0-none 1-whitelist 2-blacklist
-    val hwidOnBlackListOp by lazy { this.conf.getStringList("hwid.on-blacklist") }
+    val hwidOnBlackListOp: List<String> by lazy { this.conf.getStringList("hwid.on-blacklist") }
     val activationConfig by lazy {
         val conf = this.conf.getConfigurationSection("activation") ?: throw NullPointerException("activation @ config.yml")
         ActivationConfiguration(

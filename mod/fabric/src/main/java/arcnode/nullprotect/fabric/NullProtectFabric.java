@@ -30,8 +30,6 @@ public final class NullProtectFabric implements ClientModInitializer {
 
         PayloadTypeRegistry.playC2S().register(HardwareIdentifyResponsePacket.TYPE, HardwareIdentifyResponsePacket.CODEC);
         PayloadTypeRegistry.playS2C().register(HardwareIdentifyRequestPacket.TYPE, HardwareIdentifyRequestPacket.CODEC);
-        ClientPlayNetworking.registerGlobalReceiver(HardwareIdentifyRequestPacket.TYPE, (p, c) -> {
-            c.player().connection.send(NullProtect.getHwidPacket());
-        });
+        ClientPlayNetworking.registerGlobalReceiver(HardwareIdentifyRequestPacket.TYPE, (p, c) -> c.player().connection.send(NullProtect.getHwidPacket()));
     }
 }
