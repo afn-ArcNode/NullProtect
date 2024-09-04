@@ -9,6 +9,14 @@ val MSG_HEADER by lazy { message {
     text(" v${plugin.description.version}")
 } }
 
+val MSG_PLAYER_ONLY by lazy { plugin.context.message {
+    text("Player-only command")
+} }
+
+val MSG_INVALID_PARAMS by lazy { plugin.context.message {
+    text("Invalid parameters")
+} }
+
 val MSG_NO_PERMISSION_FULL by lazy { plugin.context.message {
     append(MSG_HEADER)
     line()

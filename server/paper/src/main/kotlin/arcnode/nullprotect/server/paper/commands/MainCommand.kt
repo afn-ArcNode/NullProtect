@@ -2,11 +2,13 @@ package arcnode.nullprotect.server.paper.commands
 
 import arcnode.nullprotect.server.paper.plugin
 import arcnode.nullprotect.server.paper.utils.runOnScheduler
+import cn.afternode.commons.bukkit.BukkitResolver
 import cn.afternode.commons.bukkit.kotlin.*
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import java.awt.Color
+import java.util.UUID
 
 object MainCommand: BaseCommand("nullprotect") {
     init {
@@ -26,6 +28,7 @@ object MainCommand: BaseCommand("nullprotect") {
                 "refreshCaches" -> refreshCache(sender)
                 "info" -> info(sender, *args)
                 "hwid" -> hwid(sender, *args)
+                "activation" -> activation(sender, *args)
                 else -> help(sender)
             }
         }
@@ -40,6 +43,8 @@ object MainCommand: BaseCommand("nullprotect") {
                 line().text("info [player] -   Get player info")
             if (plugin.hwidEnabled && plugin.hwidMatchMode != 0 && sender.hasPermission(PERM_CMD_HWID))
                 line().text("hwid [add|remove] [hwid] -     Add/Remove HWID in whitelist/blacklist")
+            if (plugin.activationConfig.enabled && sender.hasPermission(PERM_CMD_ACTIVATION))
+                line().text("activation [check|generate] (player) -     Generate activation code or check player account activation")
         }
     }
 
@@ -50,6 +55,8 @@ object MainCommand: BaseCommand("nullprotect") {
         }
 
         plugin.runAsync {
+            plugin.database.accountActivationCode.clearCache()
+            plugin.database.accountActivation.clearCache()
             plugin.database.whiteOrBlackList.clearCache()
             plugin.context.message(sender).text("All caches clear").send()
         }
@@ -61,7 +68,7 @@ object MainCommand: BaseCommand("nullprotect") {
             return
         }
         if (args.size != 2) {
-            plugin.context.message(sender).text("Invalid parameters").send()
+            sender.sendMessage(MSG_INVALID_PARAMS)
             return
         }
 
@@ -100,7 +107,7 @@ object MainCommand: BaseCommand("nullprotect") {
             return
         }
         if (args.size != 3) {   // Not enough/Too many parameters
-            plugin.context.message(sender).text("Invalid parameters").send()
+            sender.sendMessage(MSG_INVALID_PARAMS)
             return
         }
 
@@ -166,14 +173,81 @@ object MainCommand: BaseCommand("nullprotect") {
         }
     }
 
+    private fun activation(sender: CommandSender, vararg args: String) {    // 0:activation 1:[check|generate] 2:(player)
+        if (!plugin.activationConfig.enabled) {
+            this.help(sender)
+            return
+        }
+        if (args.size < 2) {    // Not enough params
+            sender.sendMessage(MSG_INVALID_PARAMS)
+            return
+        }
+        if (!sender.hasPermission(PERM_CMD_ACTIVATION)) {   // No permission
+            sender.sendMessage(MSG_NO_PERMISSION)
+            return
+        }
+
+        val op = args[1].lowercase()
+        if (
+            (op != "check" && op != "generate") ||
+            (op == "check" && args.size != 3) ||
+            (op == "generate" && args.size != 2)
+            ) {    // Invalid operation
+            sender.sendMessage(MSG_INVALID_PARAMS)
+            return
+        }
+
+        plugin.runBlockingCoroutine {
+            if (op == "check") {    // Activation check
+                val player = BukkitResolver.resolvePlayer(args[2])
+                val model = plugin.database.accountActivation.find(player.uniqueId)
+                plugin.context.sendMessage(sender) {
+                    if (model == null) {
+                        text("This player was not activated")
+                    } else {
+                        text("This player was activated with code ")
+                        append(message {
+                            text(model.code)
+                            click { copy(model.code) }
+                        })
+                    }
+                }
+            } else {    // Code generation
+                val gen = plugin.database.accountActivationCode.add(
+                    UUID.randomUUID().toString().replace("-", ""),
+                    sender.name
+                )
+                plugin.context.sendMessage(sender) {
+                    if (gen == null) {
+                        text("Failed to generated code (Unknown database error)")
+                    } else {
+                        text("Generated: ")
+                        append(message {
+                            text(gen.code)
+                            click { copy(gen.code) }
+                        })
+                        plugin.slF4JLogger.info("(${sender.name}) Generated activation code ${gen.code}")
+                    }
+                }
+            }
+        }
+    }
+
     override fun tab(sender: CommandSender, vararg args: String): MutableList<String> = commandSuggestion {
         if (args.size == 1) {
-            add(args[0], "refreshCaches", "info")
+            add(args[0], "refreshCaches", "info", "activation")
         } else if (args.size == 2) {
             if (args[0] == "info")
                 players(args[1])
             if (args[0] == "hwid")
                 add(args[1], "add", "remove")
+            if (args[0] == "activation")
+                add(args[1], "generate", "check")
+        } else if (args.size == 3) {
+            if (args[0] == "activation" && args[1] == "check") {
+                players(args[2])
+                add(args[2], "uuid:")
+            }
         }
     }
 }

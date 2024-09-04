@@ -14,6 +14,10 @@ class DatabaseManager {
     private val db: Database
     private val executor: ExecutorService
 
+    lateinit var accountActivationCode: AccountActivationCodeDatabase
+        private set
+    lateinit var accountActivation: AccountActivationDatabase
+        private set
     lateinit var whiteOrBlackList: WhiteOrBlackListDatabase
         private set
 
@@ -42,10 +46,14 @@ class DatabaseManager {
     private fun setup() {
         transaction(db) {
             SchemaUtils.createMissingTablesAndColumns(
+                AccountActivationCodeTable,
+                AccountActivationTable,
                 WhiteOrBlackListTable
             )
         }
 
+        this.accountActivationCode = AccountActivationCodeDatabase(this)
+        this.accountActivation = AccountActivationDatabase(this)
         this.whiteOrBlackList = WhiteOrBlackListDatabase(this)
     }
 

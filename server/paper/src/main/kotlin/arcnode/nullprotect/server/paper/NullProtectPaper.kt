@@ -2,8 +2,11 @@ package arcnode.nullprotect.server.paper
 
 import arcnode.nullprotect.network.PacketIO
 import arcnode.nullprotect.server.DatabaseManager
+import arcnode.nullprotect.server.paper.commands.ActivateCommand
 import arcnode.nullprotect.server.paper.commands.MainCommand
+import arcnode.nullprotect.server.paper.listeners.AccountActivationListener
 import arcnode.nullprotect.server.paper.network.NetworkManager
+import arcnode.nullprotect.server.paper.utils.ActivationConfiguration
 import cn.afternode.commons.bukkit.BukkitPluginContext
 import cn.afternode.commons.bukkit.kotlin.message
 import com.github.retrooper.packetevents.resources.ResourceLocation
@@ -48,6 +51,15 @@ class NullProtectPaper: JavaPlugin() {
         else -> 0
     } } // 0-none 1-whitelist 2-blacklist
     val hwidOnBlackListOp by lazy { this.conf.getStringList("hwid.on-blacklist") }
+    val activationConfig by lazy {
+        val conf = this.conf.getConfigurationSection("activation") ?: throw NullPointerException("activation @ config.yml")
+        ActivationConfiguration(
+            conf.getBoolean("enabled"),
+            TimeUnit.SECONDS.toMillis(conf.getInt("timeout").toLong()),
+            conf.getBoolean("blocking.chat"),
+            conf.getBoolean("blocking.move"),
+            conf.getBoolean("blocking.interact")
+    ) }
 
     override fun onLoad() {
         plugin = this
@@ -100,6 +112,14 @@ class NullProtectPaper: JavaPlugin() {
         Bukkit.getPluginManager().registerEvents(this.network, this)
         if (this.hwidEnabled)   // Hwid checker
             Bukkit.getAsyncScheduler().runAtFixedRate(this, network::runHwidCheck, 1, this.hwidCheckInterval.toLong(), TimeUnit.SECONDS)
+
+        // Register activation
+        if (activationConfig.enabled) {
+            Bukkit.getPluginManager().registerEvents(AccountActivationListener, this)
+            if (this.activationConfig.timout != -1L)    // Enable activation timeout
+                Bukkit.getAsyncScheduler().runAtFixedRate(this, AccountActivationListener::runActCheck, 1, 10, TimeUnit.SECONDS)
+            ActivateCommand.register("nullprot")
+        }
 
         MainCommand.register("nullprotect")
     }
