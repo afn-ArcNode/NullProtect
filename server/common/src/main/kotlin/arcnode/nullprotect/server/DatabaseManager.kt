@@ -34,6 +34,8 @@ class DatabaseManager {
         private set
     lateinit var accountActivation: AccountActivationDatabase
         private set
+    lateinit var hwidBinding: HWIDBindingDatabase
+        private set
     lateinit var whiteOrBlackList: WhiteOrBlackListDatabase
         private set
 
@@ -64,12 +66,14 @@ class DatabaseManager {
             SchemaUtils.createMissingTablesAndColumns(
                 AccountActivationCodeTable,
                 AccountActivationTable,
+                HWIDBindingTable,
                 WhiteOrBlackListTable
             )
         }
 
         this.accountActivationCode = AccountActivationCodeDatabase(this)
         this.accountActivation = AccountActivationDatabase(this)
+        this.hwidBinding = HWIDBindingDatabase(this)
         this.whiteOrBlackList = WhiteOrBlackListDatabase(this)
     }
 

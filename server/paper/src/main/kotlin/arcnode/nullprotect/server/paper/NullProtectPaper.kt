@@ -74,6 +74,7 @@ class NullProtectPaper: JavaPlugin() {
             sec.getBoolean("enabled"),
             sec.getInt("check-interval").toLong(),  // seconds
             sec.getInt("timeout") * 1000L,  // millis
+            sec.getBoolean("bind"),
             when (sec.getString("hwid.mode") ?: "none") {
                 "none" -> 0
                 "whitelist" -> 1

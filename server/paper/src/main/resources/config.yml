@@ -26,6 +26,8 @@ hwid:
   # Timeout (seconds)
   timeout: 10
 
+  # Enable HWID binding
+  bind: false
   # whitelist or blacklist or none
   mode: none
   # Commands to execute on blacklist triggered or added when target player is online

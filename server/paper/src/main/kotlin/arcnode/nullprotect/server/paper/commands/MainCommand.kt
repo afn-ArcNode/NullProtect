@@ -44,6 +44,7 @@ object MainCommand: BaseCommand("nullprotect") {
                 "refreshCaches" -> refreshCache(sender)
                 "info" -> info(sender, *args)
                 "hwid" -> hwid(sender, *args)
+                "unbind" -> unbind(sender, *args)
                 "activation" -> activation(sender, *args)
                 else -> help(sender)
             }
@@ -59,6 +60,8 @@ object MainCommand: BaseCommand("nullprotect") {
                 line().text("info [player] -   Get player info")
             if (plugin.hwidConfiguration.enabled && plugin.hwidConfiguration.matchMode != 0 && sender.hasPermission(PERM_CMD_HWID))
                 line().text("hwid [add|remove] [hwid] -     Add/Remove HWID in whitelist/blacklist")
+            if (plugin.hwidConfiguration.binding && sender.hasPermission(PERM_CMD_UNBIND))
+                line().text("unbind [player]    -   Unbind player with HWID")
             if (plugin.activationConfig.enabled && sender.hasPermission(PERM_CMD_ACTIVATION))
                 line().text("activation [check|generate] (player) -     Generate activation code or check player account activation")
         }
@@ -249,11 +252,34 @@ object MainCommand: BaseCommand("nullprotect") {
         }
     }
 
+    private fun unbind(sender: CommandSender, vararg args: String) {    // 0:unbind 1:[player]
+        if (!sender.hasPermission(PERM_CMD_UNBIND)) {
+            sender.sendMessage(MSG_NO_PERMISSION)
+            return
+        }
+        if (args.size != 2) {   // 2 parameters required
+            sender.sendMessage(MSG_INVALID_PARAMS)
+            return
+        }
+
+        val target = BukkitResolver.resolvePlayer(args[1])
+
+        if (target == null) {   // Not found
+            plugin.context.message(sender).text("Cannot find player with \"${args[1]}\"").send()
+        } else {
+            plugin.runBlockingCoroutine {
+                plugin.database.hwidBinding.remove(target.uniqueId)
+                plugin.context.message(sender).text("Operation completed").send()
+                plugin.slF4JLogger.info("(${sender.name}) Unbind player \"${target.name}\" from HWID")
+            }
+        }
+    }
+
     override fun tab(sender: CommandSender, vararg args: String): MutableList<String> = commandSuggestion {
         if (args.size == 1) {
-            add(args[0], "refreshCaches", "hwid", "info", "activation")
+            add(args[0], "refreshCaches", "hwid", "info", "activation", "unbind")
         } else if (args.size == 2) {
-            if (args[0] == "info")
+            if (args[0] == "info" || args[0] == "unbind")
                 players(args[1])
             if (args[0] == "hwid")
                 add(args[1], "add", "remove")

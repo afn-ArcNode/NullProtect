@@ -20,6 +20,7 @@ import arcnode.nullprotect.network.PacketIO
 import arcnode.nullprotect.server.paper.hwidChannelReq
 import arcnode.nullprotect.server.paper.hwidChannelRespStr
 import arcnode.nullprotect.server.paper.plugin
+import arcnode.nullprotect.server.paper.utils.runOnScheduler
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPluginMessage
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
@@ -109,6 +110,27 @@ class NetworkManager: Listener, PluginMessageListener {
                                 val exec = Bukkit.getConsoleSender()
                                 for (cmd in plugin.hwidOnBlackListOp) {
                                     Bukkit.dispatchCommand(exec, cmd.replace("%player%", player.name))
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // HWID binding
+                if (plugin.hwidConfiguration.binding) {
+                    plugin.runBlockingCoroutine {
+                        val bind = plugin.database.hwidBinding.find(player.uniqueId)
+                        if (bind == null) { // Not exists
+                            if (plugin.database.hwidBinding.add(player.uniqueId, dec.value) != null) {
+                                plugin.slF4JLogger.info("Bind player \"${player.name}\" to \"${dec.value}\"")
+                            } else {
+                                plugin.slF4JLogger.warn("Unable to bind \"${player.name}\" to \"${dec.value}\"")
+                            }
+                        } else {
+                            if (bind.hwid != dec.value) {   // Mismatched HWID
+                                player.runOnScheduler {
+                                    player.kick(Component.text("Mismatched HWID"))
+                                    plugin.slF4JLogger.info("Kicking player \"${player.name}\" due to mismatched HWID")
                                 }
                             }
                         }
