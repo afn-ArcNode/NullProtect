@@ -23,3 +23,11 @@ data class ActivationConfiguration(
     val blockingMove: Boolean,
     val blockingInteract: Boolean
 )
+
+data class HWIDConfiguration(
+    val enabled: Boolean,
+    val checkInterval: Long,
+    val checkTimeout: Long,
+    val matchMode: Int,
+    val hwidOnBlackListOp: List<String>
+)

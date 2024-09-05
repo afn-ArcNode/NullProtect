@@ -23,6 +23,7 @@ import arcnode.nullprotect.server.paper.commands.MainCommand
 import arcnode.nullprotect.server.paper.listeners.AccountActivationListener
 import arcnode.nullprotect.server.paper.network.NetworkManager
 import arcnode.nullprotect.server.paper.utils.ActivationConfiguration
+import arcnode.nullprotect.server.paper.utils.HWIDConfiguration
 import cn.afternode.commons.bukkit.BukkitPluginContext
 import cn.afternode.commons.bukkit.kotlin.message
 import com.github.retrooper.packetevents.resources.ResourceLocation
@@ -57,16 +58,31 @@ class NullProtectPaper: JavaPlugin() {
         private set
 
     // Configurations
-    val hwidEnabled by lazy { this.conf.getBoolean("hwid.enabled") }
-    val hwidCheckInterval by lazy { this.conf.getInt("hwid.check-interval") }   // seconds
-    val hwidCheckTimeout by lazy { this.conf.getInt("hwid.timeout")*1000 }  // millis
-    val hwidMatchMode by lazy { when (this.conf.getString("hwid.mode") ?: "none") {
-        "none" -> 0
-        "whitelist" -> 1
-        "blacklist" -> 2
-        else -> 0
-    } } // 0-none 1-whitelist 2-blacklist
+//    val hwidEnabled by lazy { this.conf.getBoolean("hwid.enabled") }
+//    val hwidCheckInterval by lazy { this.conf.getInt("hwid.check-interval") }   // seconds
+//    val hwidCheckTimeout by lazy { this.conf.getInt("hwid.timeout")*1000 }  // millis
+//    val hwidMatchMode by lazy { when (this.conf.getString("hwid.mode") ?: "none") {
+//        "none" -> 0
+//        "whitelist" -> 1
+//        "blacklist" -> 2
+//        else -> 0
+//    } } // 0-none 1-whitelist 2-blacklist
     val hwidOnBlackListOp: List<String> by lazy { this.conf.getStringList("hwid.on-blacklist") }
+    val hwidConfiguration by lazy {
+        val sec = this.conf.getConfigurationSection("hwid") ?: throw NullPointerException("hwid @ config.yml")
+        HWIDConfiguration(
+            sec.getBoolean("enabled"),
+            sec.getInt("check-interval").toLong(),  // seconds
+            sec.getInt("timeout") * 1000L,  // millis
+            when (sec.getString("hwid.mode") ?: "none") {
+                "none" -> 0
+                "whitelist" -> 1
+                "blacklist" -> 2
+                else -> 0
+            },  // 0-none 1-whitelist 2-blacklist
+            sec.getStringList("on-blacklist")
+        )
+    }
     val activationConfig by lazy {
         val conf = this.conf.getConfigurationSection("activation") ?: throw NullPointerException("activation @ config.yml")
         ActivationConfiguration(
@@ -126,8 +142,8 @@ class NullProtectPaper: JavaPlugin() {
         this.network = NetworkManager()
         Bukkit.getMessenger().registerIncomingPluginChannel(this, hwidChannelRespStr, this.network)
         Bukkit.getPluginManager().registerEvents(this.network, this)
-        if (this.hwidEnabled)   // Hwid checker
-            Bukkit.getAsyncScheduler().runAtFixedRate(this, network::runHwidCheck, 1, this.hwidCheckInterval.toLong(), TimeUnit.SECONDS)
+        if (this.hwidConfiguration.enabled)   // Hwid checker
+            Bukkit.getAsyncScheduler().runAtFixedRate(this, network::runHwidCheck, 1, this.hwidConfiguration.checkInterval.toLong(), TimeUnit.SECONDS)
 
         // Register activation
         if (activationConfig.enabled) {

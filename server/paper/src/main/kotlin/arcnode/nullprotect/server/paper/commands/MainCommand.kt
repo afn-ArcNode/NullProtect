@@ -57,7 +57,7 @@ object MainCommand: BaseCommand("nullprotect") {
                 line().text("refreshCaches -   Refresh database caches")
             if (sender.hasPermission(PERM_CMD_INFO))
                 line().text("info [player] -   Get player info")
-            if (plugin.hwidEnabled && plugin.hwidMatchMode != 0 && sender.hasPermission(PERM_CMD_HWID))
+            if (plugin.hwidConfiguration.enabled && plugin.hwidConfiguration.matchMode != 0 && sender.hasPermission(PERM_CMD_HWID))
                 line().text("hwid [add|remove] [hwid] -     Add/Remove HWID in whitelist/blacklist")
             if (plugin.activationConfig.enabled && sender.hasPermission(PERM_CMD_ACTIVATION))
                 line().text("activation [check|generate] (player) -     Generate activation code or check player account activation")
@@ -102,7 +102,7 @@ object MainCommand: BaseCommand("nullprotect") {
                 })
 
                 // HWID
-                if (plugin.hwidEnabled) {
+                if (plugin.hwidConfiguration.enabled) {
                     line()
                     text("HWID: ")
                     append(message {
@@ -147,7 +147,7 @@ object MainCommand: BaseCommand("nullprotect") {
 
 
                         // Blacklist operations
-                        if (plugin.hwidMatchMode == 2) {
+                        if (plugin.hwidConfiguration.matchMode == 2) {
                             val players = plugin.network.getPlayerByHwid(hwid)
                             if (players.isNotEmpty()) {
                                 Bukkit.getGlobalRegionScheduler().run(plugin) {
@@ -167,7 +167,7 @@ object MainCommand: BaseCommand("nullprotect") {
                         plugin.slF4JLogger.info("(${sender.name}) Removing \"$hwid\" from blacklist/whitelist")
 
                         // Whitelist operations
-                        if (plugin.hwidMatchMode == 1) {
+                        if (plugin.hwidConfiguration.matchMode == 1) {
                             val players = plugin.network.getPlayerByHwid(hwid)
                             if (players.isNotEmpty()) {
                                 for (player in players) {

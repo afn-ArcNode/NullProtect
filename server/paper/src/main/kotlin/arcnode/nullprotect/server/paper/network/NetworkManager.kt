@@ -52,7 +52,7 @@ class NetworkManager: Listener, PluginMessageListener {
         val now = System.currentTimeMillis()
 
         for (player in Bukkit.getOnlinePlayers()) {
-            if (!rtHwid.containsKey(player.uniqueId) && now - player.lastLogin > plugin.hwidCheckTimeout) {   // Timed out
+            if (!rtHwid.containsKey(player.uniqueId) && now - player.lastLogin > plugin.hwidConfiguration.checkTimeout) {   // Timed out
                 player.scheduler    // Folia compatibility
                     .run(plugin, { player.kick(Component.text("Verification timed out")) }, {})
                 plugin.slF4JLogger.info("${player.name}: HWID verification timed out")
@@ -62,7 +62,7 @@ class NetworkManager: Listener, PluginMessageListener {
 
     @EventHandler
     fun onPlayerJoin(e: PlayerJoinEvent) {  // Send request
-        if (plugin.hwidEnabled) {
+        if (plugin.hwidConfiguration.enabled) {
             PacketEvents.getAPI().playerManager.sendPacket(e.player, WrapperPlayServerPluginMessage(
                 hwidChannelReq,
                 dummyPacket
@@ -77,7 +77,7 @@ class NetworkManager: Listener, PluginMessageListener {
 
     override fun onPluginMessageReceived(channel: String, player: Player, message: ByteArray) {
         if (channel == hwidChannelRespStr) {    // HWID packet
-            if (plugin.hwidEnabled)
+            if (plugin.hwidConfiguration.enabled)
                 this.handleHwid(player, message)
         }
     }
@@ -94,14 +94,14 @@ class NetworkManager: Listener, PluginMessageListener {
                 plugin.slF4JLogger.info("HWID of ${player.name} is ${dec.value}")
 
                 // Async database operation
-                if (plugin.hwidMatchMode != 0) {
+                if (plugin.hwidConfiguration.matchMode != 0) {
                     plugin.runBlockingCoroutine {
                         val exists = plugin.database.whiteOrBlackList.exists(dec.value)
-                        if (plugin.hwidMatchMode == 1 && !exists) { // Whitelist
+                        if (plugin.hwidConfiguration.matchMode == 1 && !exists) { // Whitelist
                             player.scheduler.run(plugin, {
                                 player.kick(Component.text("You are not whitelisted on this server!"))
                             }, {})
-                        } else if (plugin.hwidMatchMode == 2 && exists) {   // Blacklist
+                        } else if (plugin.hwidConfiguration.matchMode == 2 && exists) {   // Blacklist
                             player.scheduler.run(plugin, {
                                 player.kick(Component.text("You are blacklisted on this server!"))
                             }, {})
