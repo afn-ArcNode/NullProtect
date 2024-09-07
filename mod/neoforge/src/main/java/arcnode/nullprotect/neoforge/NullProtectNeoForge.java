@@ -43,7 +43,7 @@ public final class NullProtectNeoForge {
 
         // Mods
         reg.playToServer(ModsHashResponsePacket.TYPE, ModsHashResponsePacket.CODEC, (p, c) -> {});
-        reg.playToServer(ModsHashRequestPacket.TYPE, ModsHashRequestPacket.CODEC, (p, c) -> {
+        reg.playToClient(ModsHashRequestPacket.TYPE, ModsHashRequestPacket.CODEC, (p, c) -> {
             c.connection().send(NullProtect.getModsPacket());
         });
     }
