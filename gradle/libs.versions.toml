@@ -6,6 +6,7 @@ packetevents = "2.4.0"
 afternode = "2.6.0-SNAPSHOT"
 exposed = "0.54.0"
 guava = "32.1.2-jre"
+log4j = "2.23.1"
 
 [libraries]
 netty-buffer = { module = "io.netty:netty-buffer", version.ref = "netty" }
@@ -14,6 +15,7 @@ guava = { module = "com.google.guava:guava", version.ref = "guava" }
 hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
 exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
 exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
+log4j = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
 
 paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
 packetevents-spigot = { module = "com.github.retrooper:packetevents-spigot", version.ref = "packetevents" }

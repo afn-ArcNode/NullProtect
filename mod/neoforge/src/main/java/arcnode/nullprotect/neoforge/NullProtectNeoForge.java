@@ -16,12 +16,10 @@
 
 package arcnode.nullprotect.neoforge;
 
-import arcnode.nullprotect.HardwareIdentifyRequestPacket;
-import arcnode.nullprotect.HardwareIdentifyResponsePacket;
+import arcnode.nullprotect.*;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 
-import arcnode.nullprotect.NullProtect;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
@@ -36,9 +34,17 @@ public final class NullProtectNeoForge {
 
     private void registerPayloads(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar reg = event.registrar("1").optional();
+
+        // HWID
         reg.playToServer(HardwareIdentifyResponsePacket.TYPE, HardwareIdentifyResponsePacket.CODEC, (p, c) -> {});
         reg.playToClient(HardwareIdentifyRequestPacket.TYPE, HardwareIdentifyRequestPacket.CODEC, (p, c) -> {
             c.connection().send(NullProtect.getHwidPacket());
+        });
+
+        // Mods
+        reg.playToServer(ModsHashResponsePacket.TYPE, ModsHashResponsePacket.CODEC, (p, c) -> {});
+        reg.playToClient(ModsHashRequestPacket.TYPE, ModsHashRequestPacket.CODEC, (p, c) -> {
+            c.connection().send(NullProtect.getModsPacket());
         });
     }
 }

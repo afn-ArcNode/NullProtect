@@ -21,8 +21,12 @@ import arcnode.nullprotect.server.DatabaseManager
 import arcnode.nullprotect.server.paper.commands.ActivateCommand
 import arcnode.nullprotect.server.paper.commands.MainCommand
 import arcnode.nullprotect.server.paper.listeners.AccountActivationListener
+import arcnode.nullprotect.server.paper.listeners.FakePluginListener
 import arcnode.nullprotect.server.paper.network.NetworkManager
 import arcnode.nullprotect.server.paper.utils.ActivationConfiguration
+import arcnode.nullprotect.server.paper.utils.FakeConfiguration
+import arcnode.nullprotect.server.paper.utils.HWIDConfiguration
+import arcnode.nullprotect.server.paper.utils.ModsConfiguration
 import cn.afternode.commons.bukkit.BukkitPluginContext
 import cn.afternode.commons.bukkit.kotlin.message
 import com.github.retrooper.packetevents.resources.ResourceLocation
@@ -37,9 +41,10 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 val hwidChannelReq by lazy { ResourceLocation(PacketIO.NAMESPACE, PacketIO.PATH_HWID_REQUEST) }
-val hwidChannelReqStr by lazy { hwidChannelReq.toString() }
 val hwidChannelResp by lazy { ResourceLocation(PacketIO.NAMESPACE, PacketIO.PATH_HWID_RESPONSE) }
 val hwidChannelRespStr by lazy { hwidChannelResp.toString() }
+val modsChannelReq by lazy { ResourceLocation(PacketIO.NAMESPACE, PacketIO.PATH_MODS_REQUEST) }
+val modsChannelRespStr by lazy { ResourceLocation(PacketIO.NAMESPACE, PacketIO.PATH_MODS_RESPONSE).toString() }
 
 lateinit var plugin: NullProtectPaper
     private set
@@ -57,16 +62,32 @@ class NullProtectPaper: JavaPlugin() {
         private set
 
     // Configurations
-    val hwidEnabled by lazy { this.conf.getBoolean("hwid.enabled") }
-    val hwidCheckInterval by lazy { this.conf.getInt("hwid.check-interval") }   // seconds
-    val hwidCheckTimeout by lazy { this.conf.getInt("hwid.timeout")*1000 }  // millis
-    val hwidMatchMode by lazy { when (this.conf.getString("hwid.mode") ?: "none") {
-        "none" -> 0
-        "whitelist" -> 1
-        "blacklist" -> 2
-        else -> 0
-    } } // 0-none 1-whitelist 2-blacklist
+//    val hwidEnabled by lazy { this.conf.getBoolean("hwid.enabled") }
+//    val hwidCheckInterval by lazy { this.conf.getInt("hwid.check-interval") }   // seconds
+//    val hwidCheckTimeout by lazy { this.conf.getInt("hwid.timeout")*1000 }  // millis
+//    val hwidMatchMode by lazy { when (this.conf.getString("hwid.mode") ?: "none") {
+//        "none" -> 0
+//        "whitelist" -> 1
+//        "blacklist" -> 2
+//        else -> 0
+//    } } // 0-none 1-whitelist 2-blacklist
     val hwidOnBlackListOp: List<String> by lazy { this.conf.getStringList("hwid.on-blacklist") }
+    val hwidConfiguration by lazy {
+        val sec = this.conf.getConfigurationSection("hwid") ?: throw NullPointerException("hwid @ config.yml")
+        HWIDConfiguration(
+            sec.getBoolean("enabled"),
+            sec.getInt("check-interval").toLong(),  // seconds
+            sec.getInt("timeout") * 1000L,  // millis
+            sec.getBoolean("bind"),
+            when (sec.getString("hwid.mode") ?: "none") {
+                "none" -> 0
+                "whitelist" -> 1
+                "blacklist" -> 2
+                else -> 0
+            },  // 0-none 1-whitelist 2-blacklist
+            sec.getStringList("on-blacklist")
+        )
+    }
     val activationConfig by lazy {
         val conf = this.conf.getConfigurationSection("activation") ?: throw NullPointerException("activation @ config.yml")
         ActivationConfiguration(
@@ -76,6 +97,23 @@ class NullProtectPaper: JavaPlugin() {
             conf.getBoolean("blocking.move"),
             conf.getBoolean("blocking.interact")
     ) }
+    val fakeConfiguration by lazy {
+        val conf = this.conf.getConfigurationSection("fake") ?: throw NullPointerException("fake @ config.yml")
+        FakeConfiguration(
+            conf.getBoolean("enabled", true),
+            conf.getBoolean("fake-version", true),
+            conf.getConfigurationSection("fake-version-plugins") ?: throw NullPointerException("fake.fake-version-plugins @ config.yml"),
+            conf.getBoolean("hide-self", true)
+        )
+    }
+    val modsConfiguration by lazy {
+        val conf = this.conf.getConfigurationSection("mods") ?: throw NullPointerException("mods @ config.yml")
+        ModsConfiguration(
+            conf.getBoolean("enabled", false),
+            conf.getInt("check-interval").toLong(),  // seconds
+            conf.getInt("timeout") * 1000L,  // millis
+        )
+    }
 
     override fun onLoad() {
         plugin = this
@@ -124,10 +162,23 @@ class NullProtectPaper: JavaPlugin() {
 
         // Register networking
         this.network = NetworkManager()
-        Bukkit.getMessenger().registerIncomingPluginChannel(this, hwidChannelRespStr, this.network)
+
         Bukkit.getPluginManager().registerEvents(this.network, this)
-        if (this.hwidEnabled)   // Hwid checker
-            Bukkit.getAsyncScheduler().runAtFixedRate(this, network::runHwidCheck, 1, this.hwidCheckInterval.toLong(), TimeUnit.SECONDS)
+        if (this.hwidConfiguration.enabled) {   // Hwid checker
+            Bukkit.getAsyncScheduler().runAtFixedRate(
+                this,
+                network::runHwidCheck,
+                1,
+                this.hwidConfiguration.checkInterval.toLong(),
+                TimeUnit.SECONDS
+            )
+            Bukkit.getMessenger().registerIncomingPluginChannel(this, hwidChannelRespStr, this.network)
+        }
+        if (this.modsConfiguration.enabled) {   // Mods checker
+            Bukkit.getAsyncScheduler()
+                .runAtFixedRate(this, network::runModsCheck, 1, this.modsConfiguration.checkInterval, TimeUnit.SECONDS)
+            Bukkit.getMessenger().registerIncomingPluginChannel(this, modsChannelRespStr, this.network)
+        }
 
         // Register activation
         if (activationConfig.enabled) {
@@ -135,6 +186,11 @@ class NullProtectPaper: JavaPlugin() {
             if (this.activationConfig.timout != -1L)    // Enable activation timeout
                 Bukkit.getAsyncScheduler().runAtFixedRate(this, AccountActivationListener::runActCheck, 1, 10, TimeUnit.SECONDS)
             ActivateCommand.register("nullprot")
+        }
+
+        // Register fake
+        if (fakeConfiguration.enabled) {
+            FakePluginListener.init()
         }
 
         MainCommand.register("nullprotect")

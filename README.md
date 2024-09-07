@@ -14,7 +14,8 @@ Changes and redistributions of this mod are permitted, but the original license 
 
  - **NeoForge mod (client)** `gradlew :mod:neoforge:build`
  - **Fabric mod (client)** `gradlew :mod:fabric:build`
- - **Server plugin** `gradlew :server:shadowJar`
+ - **Server plugin** `gradlew :server:dist`
+ - **All** `gradlew :dist` (Output in dist folder)
 
 ## Installing
 

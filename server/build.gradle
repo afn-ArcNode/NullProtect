@@ -1,3 +1,4 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import xyz.jpenilla.runtask.task.AbstractRun
 
 plugins {
@@ -44,13 +45,24 @@ shadowJar {
         exclude dependency("org.jetbrains:annotations")
     }
 
-    def rel = "arcnode.nullprotect.server.libs"
-    relocate "com.zaxxer.hikari", "${rel}.hikari"
-    relocate "cn.afternode", "${rel}.afternode"
-    relocate "kotlinx", "${rel}.kotlinx"
-    relocate "kotlin", "${rel}.kotlin"
-    relocate "org.jetbrains.exposed", "${rel}.exposed"
-    relocate "_COROUTINE", "${rel}._COROUTINE"
+    exclude("DebugProbesKt.bin", "META-INF/*.kotlin_module")
+    minimize {
+        exclude dependency(libs.exposed.jdbc.get())
+        exclude dependency(libs.exposed.core.get())
+        exclude project(":server:paper")
+        exclude project(":server:common")
+    }
+    mergeServiceFiles()
+}
+
+task dist(type: ShadowJar, group: "build") {
+    configurations = [project.configurations.include]
+    archiveClassifier.set("dist")
+
+    dependencies {
+        exclude dependency('org.slf4j:slf4j-api')
+        exclude dependency("org.jetbrains:annotations")
+    }
 
     exclude("DebugProbesKt.bin", "META-INF/*.kotlin_module")
     minimize {
@@ -60,6 +72,14 @@ shadowJar {
         exclude project(":server:common")
     }
     mergeServiceFiles()
+
+    def rel = "arcnode.nullprotect.server.libs"
+    relocate "com.zaxxer.hikari", "${rel}.hikari"
+    relocate "cn.afternode", "${rel}.afternode"
+    relocate "kotlinx", "${rel}.kotlinx"
+    relocate "kotlin", "${rel}.kotlin"
+    relocate "org.jetbrains.exposed", "${rel}.exposed"
+    relocate "_COROUTINE", "${rel}._COROUTINE"
 }
 
 runServer {

@@ -25,8 +25,10 @@ public class PacketIO {
     public static final String NAMESPACE = "nullprotect";
     public static final String PATH_HWID_REQUEST = "hwid/request";
     public static final String PATH_HWID_RESPONSE = "hwid/response";
+    public static final String PATH_MODS_REQUEST = "mods/request";
+    public static final String PATH_MODS_RESPONSE = "mods/response";
 
-    public static void encode(ByteBuf buf, HardwareIdentifyData data) {
+    public static void encode(ByteBuf buf, SingleStringData data) {
         byte[] bytes = data.value().getBytes(StandardCharsets.UTF_8);
         buf.writeInt(bytes.length);
         buf.writeBytes(bytes);
@@ -36,19 +38,19 @@ public class PacketIO {
         byte[] dum = new byte[16];
         ByteBuf bb = Unpooled.wrappedBuffer(dum);
         bb.writerIndex(0);
-        encode(bb, new HardwareIdentifyData(""));
+        encode(bb, new SingleStringData(""));
         return dum;
     }
 
-    public static HardwareIdentifyData decode(ByteBuf buf) {
+    public static SingleStringData decode(ByteBuf buf) {
         int length = buf.readInt();
         byte[] bytes = new byte[length];
         buf.readBytes(bytes);
         buf.readBytes(buf.readableBytes());
-        return new HardwareIdentifyData(new String(bytes, StandardCharsets.UTF_8));
+        return new SingleStringData(new String(bytes, StandardCharsets.UTF_8));
     }
 
-    public static HardwareIdentifyData decode(byte[] data) {
+    public static SingleStringData decode(byte[] data) {
         ByteBuf bb = Unpooled.copiedBuffer(data);
         bb.readerIndex(0);
         return decode(bb);

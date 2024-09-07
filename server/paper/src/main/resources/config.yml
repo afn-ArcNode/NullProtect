@@ -26,6 +26,8 @@ hwid:
   # Timeout (seconds)
   timeout: 10
 
+  # Enable HWID binding
+  bind: false
   # whitelist or blacklist or none
   mode: none
   # Commands to execute on blacklist triggered or added when target player is online
@@ -42,3 +44,26 @@ activation:
     chat: true
     move: true
     interact: true
+
+# Fake plugin commands
+fake:
+  enabled: true
+  # Fake version command tab-completes
+  fake-version: true
+  # Append fake plugin names to version command
+  # Also creates fake version messages
+  fake-version-plugins:
+    NotProtect:
+      author: AFterNode
+      version: 114.514
+  # Hide NullProtect
+  hide-self: true
+
+# Mods hash check
+mods:
+  enabled: false
+
+  # Timeout check interval (seconds)
+  check-interval: 10
+  # Timeout (seconds)
+  timeout: 10

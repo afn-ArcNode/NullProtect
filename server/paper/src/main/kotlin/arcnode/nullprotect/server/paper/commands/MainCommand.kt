@@ -25,6 +25,7 @@ import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import java.awt.Color
 import java.util.UUID
+import kotlin.io.path.writeText
 
 object MainCommand: BaseCommand("nullprotect") {
     init {
@@ -44,7 +45,9 @@ object MainCommand: BaseCommand("nullprotect") {
                 "refreshCaches" -> refreshCache(sender)
                 "info" -> info(sender, *args)
                 "hwid" -> hwid(sender, *args)
+                "unbind" -> unbind(sender, *args)
                 "activation" -> activation(sender, *args)
+                "mods" -> mods(sender, *args)
                 else -> help(sender)
             }
         }
@@ -57,10 +60,14 @@ object MainCommand: BaseCommand("nullprotect") {
                 line().text("refreshCaches -   Refresh database caches")
             if (sender.hasPermission(PERM_CMD_INFO))
                 line().text("info [player] -   Get player info")
-            if (plugin.hwidEnabled && plugin.hwidMatchMode != 0 && sender.hasPermission(PERM_CMD_HWID))
+            if (plugin.hwidConfiguration.enabled && plugin.hwidConfiguration.matchMode != 0 && sender.hasPermission(PERM_CMD_HWID))
                 line().text("hwid [add|remove] [hwid] -     Add/Remove HWID in whitelist/blacklist")
+            if (plugin.hwidConfiguration.binding && sender.hasPermission(PERM_CMD_UNBIND))
+                line().text("unbind [player]    -   Unbind player with HWID")
             if (plugin.activationConfig.enabled && sender.hasPermission(PERM_CMD_ACTIVATION))
                 line().text("activation [check|generate] (player) -     Generate activation code or check player account activation")
+            if (plugin.modsConfiguration.enabled && sender.hasPermission(PERM_CMD_MODS))
+                line().text("mods [player]  -   Set mods verification hash")
         }
     }
 
@@ -102,7 +109,7 @@ object MainCommand: BaseCommand("nullprotect") {
                 })
 
                 // HWID
-                if (plugin.hwidEnabled) {
+                if (plugin.hwidConfiguration.enabled) {
                     line()
                     text("HWID: ")
                     append(message {
@@ -147,7 +154,7 @@ object MainCommand: BaseCommand("nullprotect") {
 
 
                         // Blacklist operations
-                        if (plugin.hwidMatchMode == 2) {
+                        if (plugin.hwidConfiguration.matchMode == 2) {
                             val players = plugin.network.getPlayerByHwid(hwid)
                             if (players.isNotEmpty()) {
                                 Bukkit.getGlobalRegionScheduler().run(plugin) {
@@ -167,7 +174,7 @@ object MainCommand: BaseCommand("nullprotect") {
                         plugin.slF4JLogger.info("(${sender.name}) Removing \"$hwid\" from blacklist/whitelist")
 
                         // Whitelist operations
-                        if (plugin.hwidMatchMode == 1) {
+                        if (plugin.hwidConfiguration.matchMode == 1) {
                             val players = plugin.network.getPlayerByHwid(hwid)
                             if (players.isNotEmpty()) {
                                 for (player in players) {
@@ -249,11 +256,67 @@ object MainCommand: BaseCommand("nullprotect") {
         }
     }
 
+    private fun unbind(sender: CommandSender, vararg args: String) {    // 0:unbind 1:[player]
+        if (!sender.hasPermission(PERM_CMD_UNBIND)) {
+            sender.sendMessage(MSG_NO_PERMISSION)
+            return
+        }
+        if (args.size != 2) {   // 2 parameters required
+            sender.sendMessage(MSG_INVALID_PARAMS)
+            return
+        }
+
+        val target = BukkitResolver.resolvePlayer(args[1])
+
+        if (target == null) {   // Not found
+            plugin.context.message(sender).text("Cannot find player with \"${args[1]}\"").send()
+        } else {
+            plugin.runBlockingCoroutine {
+                plugin.database.hwidBinding.remove(target.uniqueId)
+                plugin.context.message(sender).text("Operation completed").send()
+                plugin.slF4JLogger.info("(${sender.name}) Unbind player \"${target.name}\" from HWID")
+            }
+        }
+    }
+
+    private fun mods(sender: CommandSender, vararg args: String) {  // 0:mods 1:[player]
+        if (!plugin.modsConfiguration.enabled) {
+            sender.sendMessage(MSG_FEAT_DISABLED)
+            return
+        }
+
+        if(!sender.hasPermission(PERM_CMD_MODS)) {
+            sender.sendMessage(MSG_NO_PERMISSION)
+            return
+        }
+        if (args.size != 2) {
+            sender.sendMessage(MSG_INVALID_PARAMS)
+            return
+        }
+
+        val player = Bukkit.getPlayer(args[1])
+        if (player == null) {   // Not found
+            plugin.context.message(sender).text("Cannot find player with \"${args[1]}\"").send()
+        } else {
+            plugin.runAsync {
+                val hash = plugin.network.getPlayerMods(player)
+                if (hash == null) {
+                    plugin.context.message(sender).text("This player has no hash recorded").send()
+                } else {
+                    plugin.network.modsHash = hash
+                    plugin.network.hashConf.writeText(hash)
+                    plugin.context.message(sender).text("Changed mods hash to ").text(hash, Color.green).send()
+                    plugin.slF4JLogger.info("(${sender.name}) Changed mods hash to \"$hash\"")
+                }
+            }
+        }
+    }
+
     override fun tab(sender: CommandSender, vararg args: String): MutableList<String> = commandSuggestion {
         if (args.size == 1) {
-            add(args[0], "refreshCaches", "hwid", "info", "activation")
+            add(args[0], "refreshCaches", "hwid", "info", "activation", "unbind", "mods")
         } else if (args.size == 2) {
-            if (args[0] == "info")
+            if (args[0] == "info" || args[0] == "unbind" || args[0] == "mods")
                 players(args[1])
             if (args[0] == "hwid")
                 add(args[1], "add", "remove")

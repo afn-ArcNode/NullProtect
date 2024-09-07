@@ -16,23 +16,58 @@
 
 package arcnode.nullprotect;
 
-import arcnode.nullprotect.network.HardwareIdentifyData;
+import arcnode.nullprotect.network.SingleStringData;
+import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+import lombok.Getter;
+import net.minecraft.CrashReport;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
 import oshi.hardware.ComputerSystem;
 import oshi.hardware.HardwareAbstractionLayer;
 
+import java.io.File;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.concurrent.CompletableFuture;
 
 public final class NullProtect {
     public static final String MOD_ID = "nullprotect";
+    private static final Logger log = LoggerFactory.getLogger("NullProtect");
 
     private static String hwidStr;
+    @Getter
+    private static String modsHash;
 
     public static void init() {
-        // Write common init code here.
+        // Calculate mods hash
+        Thread hashCalc = new Thread(() -> {
+            try {
+                log.info("Calculating mods hash");
+                File dir = new File(Minecraft.getInstance().gameDirectory, "mods");
+                HashFunction hash = Hashing.sha256();
+                StringBuilder sb = new StringBuilder();
+                for (File file : dir.listFiles()) {
+                    try (InputStream is = Files.newInputStream(file.toPath())) {
+                        byte[] data = new byte[8];
+                        is.read(data);
+                        sb.append(hash.hashBytes(data));
+                    }
+                }
+
+                NullProtect.modsHash = hash.hashString(sb.toString(), StandardCharsets.UTF_8).toString();
+                log.info("Mods hash calculation completed: {}", NullProtect.modsHash);
+            } catch (Throwable t) {
+                Minecraft.getInstance().delayCrash(new CrashReport("NullProtect/HashCalc", t));
+            }
+        });
+        hashCalc.setName("NullProtect/HashCalc");
+        hashCalc.start();
     }
 
     public static String getHwidString() {
@@ -63,8 +98,18 @@ public final class NullProtect {
     public static ServerboundCustomPayloadPacket getHwidPacket() {
         return new ServerboundCustomPayloadPacket(
                 new HardwareIdentifyResponsePacket(
-                        new HardwareIdentifyData(
+                        new SingleStringData(
                                 getHwidString()
+                        )
+                )
+        );
+    }
+
+    public static ServerboundCustomPayloadPacket getModsPacket() {
+        return new ServerboundCustomPayloadPacket(
+                new ModsHashResponsePacket(
+                        new SingleStringData(
+                                getModsHash()
                         )
                 )
         );
