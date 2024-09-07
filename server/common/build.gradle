@@ -1,5 +1,6 @@
 dependencies {
     compileOnly libs.guava
+    compileOnly libs.log4j
 
     include libs.hikaricp
 
