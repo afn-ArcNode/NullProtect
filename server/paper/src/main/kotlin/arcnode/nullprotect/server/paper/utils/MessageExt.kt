@@ -16,28 +16,6 @@
 
 package arcnode.nullprotect.server.paper.utils
 
-import org.bukkit.configuration.ConfigurationSection
+import org.bukkit.Color
 
-data class ActivationConfiguration(
-    val enabled: Boolean,
-    val timout: Long,
-    val blockingChat: Boolean,
-    val blockingMove: Boolean,
-    val blockingInteract: Boolean
-)
-
-data class HWIDConfiguration(
-    val enabled: Boolean,
-    val checkInterval: Long,
-    val checkTimeout: Long,
-    val binding: Boolean,
-    val matchMode: Int,
-    val hwidOnBlackListOp: List<String>
-)
-
-data class FakeConfiguration(
-    val enabled: Boolean,
-    val fakeVersion: Boolean,
-    val fakeVersionPlugins: ConfigurationSection,
-    val hideSelf: Boolean
-)
+fun Color.asAWT() = java.awt.Color(this.asRGB())
