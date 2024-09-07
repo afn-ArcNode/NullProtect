@@ -16,28 +16,27 @@
 
 package arcnode.nullprotect;
 
-import arcnode.nullprotect.network.SingleStringData;
 import arcnode.nullprotect.network.PacketIO;
+import arcnode.nullprotect.network.SingleStringData;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import org.jetbrains.annotations.NotNull;
 
-public record HardwareIdentifyResponsePacket(SingleStringData data) implements CustomPacketPayload {
-    public static final CustomPacketPayload.Type<HardwareIdentifyResponsePacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(PacketIO.NAMESPACE, PacketIO.PATH_HWID_RESPONSE));
-    public static final StreamCodec<FriendlyByteBuf, HardwareIdentifyResponsePacket> CODEC = CustomPacketPayload.codec(HardwareIdentifyResponsePacket::encode, HardwareIdentifyResponsePacket::decode);
+public record ModsHashRequestPacket(SingleStringData data) implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<ModsHashRequestPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(PacketIO.NAMESPACE, PacketIO.PATH_MODS_REQUEST));
+    public static final StreamCodec<FriendlyByteBuf, ModsHashRequestPacket>  CODEC = CustomPacketPayload.codec(ModsHashRequestPacket::encode, ModsHashRequestPacket::decode);
 
     @Override
-    public @NotNull Type<? extends CustomPacketPayload> type() {
+    public Type<? extends CustomPacketPayload> type() {
         return TYPE;
     }
 
-    private static HardwareIdentifyResponsePacket decode(FriendlyByteBuf buf) {
-        return new HardwareIdentifyResponsePacket(PacketIO.decode(buf));
+    public static ModsHashRequestPacket decode(FriendlyByteBuf buf) {
+        return new ModsHashRequestPacket(PacketIO.decode(buf));
     }
 
     private void encode(FriendlyByteBuf buf) {
-        PacketIO.encode(buf, this.data);
+        PacketIO.encode(buf, data);
     }
 }

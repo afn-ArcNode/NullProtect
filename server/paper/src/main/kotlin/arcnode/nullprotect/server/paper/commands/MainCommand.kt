@@ -25,6 +25,7 @@ import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import java.awt.Color
 import java.util.UUID
+import kotlin.io.path.writeText
 
 object MainCommand: BaseCommand("nullprotect") {
     init {
@@ -46,6 +47,7 @@ object MainCommand: BaseCommand("nullprotect") {
                 "hwid" -> hwid(sender, *args)
                 "unbind" -> unbind(sender, *args)
                 "activation" -> activation(sender, *args)
+                "mods" -> mods(sender, *args)
                 else -> help(sender)
             }
         }
@@ -64,6 +66,8 @@ object MainCommand: BaseCommand("nullprotect") {
                 line().text("unbind [player]    -   Unbind player with HWID")
             if (plugin.activationConfig.enabled && sender.hasPermission(PERM_CMD_ACTIVATION))
                 line().text("activation [check|generate] (player) -     Generate activation code or check player account activation")
+            if (plugin.modsConfiguration.enabled && sender.hasPermission(PERM_CMD_MODS))
+                line().text("mods [player]  -   Set mods verification hash")
         }
     }
 
@@ -275,11 +279,44 @@ object MainCommand: BaseCommand("nullprotect") {
         }
     }
 
+    private fun mods(sender: CommandSender, vararg args: String) {  // 0:mods 1:[player]
+        if (!plugin.modsConfiguration.enabled) {
+            sender.sendMessage(MSG_FEAT_DISABLED)
+            return
+        }
+
+        if(!sender.hasPermission(PERM_CMD_MODS)) {
+            sender.sendMessage(MSG_NO_PERMISSION)
+            return
+        }
+        if (args.size != 2) {
+            sender.sendMessage(MSG_INVALID_PARAMS)
+            return
+        }
+
+        val player = Bukkit.getPlayer(args[1])
+        if (player == null) {   // Not found
+            plugin.context.message(sender).text("Cannot find player with \"${args[1]}\"").send()
+        } else {
+            plugin.runAsync {
+                val hash = plugin.network.getPlayerMods(player)
+                if (hash == null) {
+                    plugin.context.message(sender).text("This player has no hash recorded").send()
+                } else {
+                    plugin.network.modsHash = hash
+                    plugin.network.hashConf.writeText(hash)
+                    plugin.context.message(sender).text("Changed mods hash to ").text(hash, Color.green).send()
+                    plugin.slF4JLogger.info("(${sender.name}) Changed mods hash to \"$hash\"")
+                }
+            }
+        }
+    }
+
     override fun tab(sender: CommandSender, vararg args: String): MutableList<String> = commandSuggestion {
         if (args.size == 1) {
-            add(args[0], "refreshCaches", "hwid", "info", "activation", "unbind")
+            add(args[0], "refreshCaches", "hwid", "info", "activation", "unbind", "mods")
         } else if (args.size == 2) {
-            if (args[0] == "info" || args[0] == "unbind")
+            if (args[0] == "info" || args[0] == "unbind" || args[0] == "mods")
                 players(args[1])
             if (args[0] == "hwid")
                 add(args[1], "add", "remove")

@@ -26,6 +26,7 @@ import arcnode.nullprotect.server.paper.network.NetworkManager
 import arcnode.nullprotect.server.paper.utils.ActivationConfiguration
 import arcnode.nullprotect.server.paper.utils.FakeConfiguration
 import arcnode.nullprotect.server.paper.utils.HWIDConfiguration
+import arcnode.nullprotect.server.paper.utils.ModsConfiguration
 import cn.afternode.commons.bukkit.BukkitPluginContext
 import cn.afternode.commons.bukkit.kotlin.message
 import com.github.retrooper.packetevents.resources.ResourceLocation
@@ -40,9 +41,10 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 val hwidChannelReq by lazy { ResourceLocation(PacketIO.NAMESPACE, PacketIO.PATH_HWID_REQUEST) }
-val hwidChannelReqStr by lazy { hwidChannelReq.toString() }
 val hwidChannelResp by lazy { ResourceLocation(PacketIO.NAMESPACE, PacketIO.PATH_HWID_RESPONSE) }
 val hwidChannelRespStr by lazy { hwidChannelResp.toString() }
+val modsChannelReq by lazy { ResourceLocation(PacketIO.NAMESPACE, PacketIO.PATH_MODS_REQUEST) }
+val modsChannelRespStr by lazy { ResourceLocation(PacketIO.NAMESPACE, PacketIO.PATH_MODS_RESPONSE).toString() }
 
 lateinit var plugin: NullProtectPaper
     private set
@@ -104,6 +106,14 @@ class NullProtectPaper: JavaPlugin() {
             conf.getBoolean("hide-self", true)
         )
     }
+    val modsConfiguration by lazy {
+        val conf = this.conf.getConfigurationSection("mods") ?: throw NullPointerException("mods @ config.yml")
+        ModsConfiguration(
+            conf.getBoolean("enabled", false),
+            conf.getInt("check-interval").toLong(),  // seconds
+            conf.getInt("timeout") * 1000L,  // millis
+        )
+    }
 
     override fun onLoad() {
         plugin = this
@@ -152,10 +162,23 @@ class NullProtectPaper: JavaPlugin() {
 
         // Register networking
         this.network = NetworkManager()
-        Bukkit.getMessenger().registerIncomingPluginChannel(this, hwidChannelRespStr, this.network)
+
         Bukkit.getPluginManager().registerEvents(this.network, this)
-        if (this.hwidConfiguration.enabled)   // Hwid checker
-            Bukkit.getAsyncScheduler().runAtFixedRate(this, network::runHwidCheck, 1, this.hwidConfiguration.checkInterval.toLong(), TimeUnit.SECONDS)
+        if (this.hwidConfiguration.enabled) {   // Hwid checker
+            Bukkit.getAsyncScheduler().runAtFixedRate(
+                this,
+                network::runHwidCheck,
+                1,
+                this.hwidConfiguration.checkInterval.toLong(),
+                TimeUnit.SECONDS
+            )
+            Bukkit.getMessenger().registerIncomingPluginChannel(this, hwidChannelRespStr, this.network)
+        }
+        if (this.modsConfiguration.enabled) {   // Mods checker
+            Bukkit.getAsyncScheduler()
+                .runAtFixedRate(this, network::runModsCheck, 1, this.modsConfiguration.checkInterval, TimeUnit.SECONDS)
+            Bukkit.getMessenger().registerIncomingPluginChannel(this, modsChannelRespStr, this.network)
+        }
 
         // Register activation
         if (activationConfig.enabled) {

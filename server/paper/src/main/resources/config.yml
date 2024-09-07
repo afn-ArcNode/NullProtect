@@ -58,3 +58,12 @@ fake:
       version: 114.514
   # Hide NullProtect
   hide-self: true
+
+# Mods hash check
+mods:
+  enabled: false
+
+  # Timeout check interval (seconds)
+  check-interval: 10
+  # Timeout (seconds)
+  timeout: 10

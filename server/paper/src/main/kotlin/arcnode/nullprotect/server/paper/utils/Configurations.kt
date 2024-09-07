@@ -41,3 +41,9 @@ data class FakeConfiguration(
     val fakeVersionPlugins: ConfigurationSection,
     val hideSelf: Boolean
 )
+
+data class ModsConfiguration(
+    val enabled: Boolean,
+    val checkInterval: Long,
+    val checkTimeout: Long
+)

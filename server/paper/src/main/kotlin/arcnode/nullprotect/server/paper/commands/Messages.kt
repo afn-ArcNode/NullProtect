@@ -42,3 +42,7 @@ val MSG_NO_PERMISSION_FULL by lazy { plugin.context.message {
 val MSG_NO_PERMISSION by lazy { plugin.context.message {
     text("You have no permission to do this")
 } }
+
+val MSG_FEAT_DISABLED by lazy { plugin.context.message {
+    text("This feature is disabled")
+} }
