@@ -3,8 +3,9 @@
 Minecraft server protection suit
 
 ## Features
- - HWID blacklist/whitelist (Requires client mod)
+ - HWID blacklist/whitelist/bind (Requires client mod)
  - Player account activation code
+ - Mods hash verification (Requires client mod)
 
 ## Building
 
