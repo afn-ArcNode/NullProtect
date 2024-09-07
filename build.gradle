@@ -1,4 +1,5 @@
 import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 plugins {
     id 'java-library'
@@ -43,8 +44,8 @@ task dist(group: "build") {
         if (!Files.exists(output))
             Files.createDirectory(output)
         def proj = projectDir.toPath()
-        Files.copy(proj.resolve("server/build/libs/server-${project.version}-dist.jar"), output.resolve("NullProtect-Server-${project.version}.jar"))
-        Files.copy(proj.resolve("mod/neoforge/build/libs/nullprotect-neoforge-${project.version}.jar"), output.resolve("NullProtect-NeoForge-${project.version}.jar"))
-        Files.copy(proj.resolve("mod/fabric/build/libs/nullprotect-fabric-${project.version}.jar"), output.resolve("NullProtect-Fabric-${project.version}.jar"))
+        Files.copy(proj.resolve("server/build/libs/server-${project.version}-dist.jar"), output.resolve("NullProtect-Server-${project.version}.jar"), StandardCopyOption.REPLACE_EXISTING)
+        Files.copy(proj.resolve("mod/neoforge/build/libs/nullprotect-neoforge-${project.version}.jar"), output.resolve("NullProtect-NeoForge-${project.version}.jar"), StandardCopyOption.REPLACE_EXISTING)
+        Files.copy(proj.resolve("mod/fabric/build/libs/nullprotect-fabric-${project.version}.jar"), output.resolve("NullProtect-Fabric-${project.version}.jar"), StandardCopyOption.REPLACE_EXISTING)
     }
 }
