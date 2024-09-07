@@ -44,3 +44,11 @@ activation:
     chat: true
     move: true
     interact: true
+
+# Fake plugin commands
+fake:
+  enabled: true
+  # Fake version command tab-completes
+  fake-version: true
+  # Hide NullProtect
+  hide-self: true

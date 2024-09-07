@@ -32,3 +32,9 @@ data class HWIDConfiguration(
     val matchMode: Int,
     val hwidOnBlackListOp: List<String>
 )
+
+data class FakeConfiguration(
+    val enabled: Boolean,
+    val fakeVersion: Boolean,
+    val hideSelf: Boolean
+)

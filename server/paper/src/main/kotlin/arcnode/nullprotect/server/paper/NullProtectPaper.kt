@@ -21,8 +21,10 @@ import arcnode.nullprotect.server.DatabaseManager
 import arcnode.nullprotect.server.paper.commands.ActivateCommand
 import arcnode.nullprotect.server.paper.commands.MainCommand
 import arcnode.nullprotect.server.paper.listeners.AccountActivationListener
+import arcnode.nullprotect.server.paper.listeners.FakePluginListener
 import arcnode.nullprotect.server.paper.network.NetworkManager
 import arcnode.nullprotect.server.paper.utils.ActivationConfiguration
+import arcnode.nullprotect.server.paper.utils.FakeConfiguration
 import arcnode.nullprotect.server.paper.utils.HWIDConfiguration
 import cn.afternode.commons.bukkit.BukkitPluginContext
 import cn.afternode.commons.bukkit.kotlin.message
@@ -93,6 +95,14 @@ class NullProtectPaper: JavaPlugin() {
             conf.getBoolean("blocking.move"),
             conf.getBoolean("blocking.interact")
     ) }
+    val fakeConfiguration by lazy {
+        val conf = this.conf.getConfigurationSection("fake") ?: throw NullPointerException("fake @ config.yml")
+        FakeConfiguration(
+            conf.getBoolean("enabled", true),
+            conf.getBoolean("fake-version", true),
+            conf.getBoolean("hide-self", true)
+        )
+    }
 
     override fun onLoad() {
         plugin = this
@@ -152,6 +162,11 @@ class NullProtectPaper: JavaPlugin() {
             if (this.activationConfig.timout != -1L)    // Enable activation timeout
                 Bukkit.getAsyncScheduler().runAtFixedRate(this, AccountActivationListener::runActCheck, 1, 10, TimeUnit.SECONDS)
             ActivateCommand.register("nullprot")
+        }
+
+        // Register fake
+        if (fakeConfiguration.enabled) {
+            FakePluginListener.init()
         }
 
         MainCommand.register("nullprotect")
