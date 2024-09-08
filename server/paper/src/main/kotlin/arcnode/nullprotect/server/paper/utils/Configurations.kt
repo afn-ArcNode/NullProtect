@@ -47,3 +47,13 @@ data class ModsConfiguration(
     val checkInterval: Long,
     val checkTimeout: Long
 )
+
+data class CaptchaConfiguration(
+    val minInterval: Int,
+    val timeout: Int,
+    val autoLumbering: Int,
+    val autoMining: Int,
+    val autoMiningDeepslate: Int,
+    val autoFishing: Int
+)
+

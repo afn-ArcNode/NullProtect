@@ -68,9 +68,18 @@ mods:
   # Timeout (seconds)
   timeout: 10
 
-# Chest UI captcha
+# Ingame captcha
 captcha:
   enabled: false
 
-  # Minimum captcha interval (seconds)
+  # Minimum interval (seconds) for auto captcha
   min-interval: 600
+  # Timeout (seconds)
+  timeout: 30
+
+  # Auto trigger probability for per event (1-100)
+  auto:
+    lumbering: 5
+    mining: 5
+    mining_deepslate: 5
+    fishing: 10

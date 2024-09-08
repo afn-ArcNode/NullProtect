@@ -338,7 +338,7 @@ object MainCommand: BaseCommand("nullprotect") {
             if (cap.isInCaptcha(player)) {
                 plugin.context.message(sender).text("${player.name} already in a captcha").send()
             } else {
-                cap.start(player) {
+                cap.start(player, true) {
                     plugin.context.sendMessage(sender) {
                         text("Captcha for ${player.name} ")
                         if (it)
