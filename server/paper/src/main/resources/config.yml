@@ -67,3 +67,10 @@ mods:
   check-interval: 10
   # Timeout (seconds)
   timeout: 10
+
+# Chest UI captcha
+captcha:
+  enabled: false
+
+  # Minimum captcha interval (seconds)
+  min-interval: 600

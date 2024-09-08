@@ -18,6 +18,7 @@ package arcnode.nullprotect.server.paper.commands
 
 import arcnode.nullprotect.server.paper.plugin
 import cn.afternode.commons.bukkit.kotlin.message
+import java.awt.Color
 
 val MSG_HEADER by lazy { message {
     useStyleStack()
@@ -45,4 +46,8 @@ val MSG_NO_PERMISSION by lazy { plugin.context.message {
 
 val MSG_FEAT_DISABLED by lazy { plugin.context.message {
     text("This feature is disabled")
+} }
+
+val MSG_CLICK_TO_COMPLETE_CAPTCHA by lazy { message {
+    text("Click to complete captcha", Color.green)
 } }
