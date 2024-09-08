@@ -10,5 +10,6 @@
     - **generate** Generate an activation code
     - **check (player)** Check player account activation state
   - **mods [player]** Set mods verification hash to player
+  - **captcha [player]** Forced start captcha for player
 
 - **activate [code]** Activate account with code

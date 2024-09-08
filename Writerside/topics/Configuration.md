@@ -71,6 +71,21 @@ mods:
   # Timeout (seconds)
   timeout: 10
 
+# Ingame captcha
+captcha:
+  enabled: false
+
+  # Minimum interval (seconds) for auto captcha
+  min-interval: 600
+  # Timeout (seconds)
+  timeout: 30
+
+  # Auto trigger probability for per event (1-100)
+  auto:
+    lumbering: 5
+    mining: 5
+    mining_deepslate: 5
+    fishing: 10
 ```
 
 - `database`
@@ -103,3 +118,9 @@ mods:
   - `enabled` Enable mods hash check
   - `check-interval` Timeout check interval (seconds)
   - `timeout` Hash packet timeout (seconds)
+
+- `captcha`
+  - `enabled` Enable ingame captcha
+  - `min-interval` Minimum interval between automated captcha (seconds)
+  - `timeout` Maximum time per captcha (seconds)
+  - `auto` Automated captcha triggers
