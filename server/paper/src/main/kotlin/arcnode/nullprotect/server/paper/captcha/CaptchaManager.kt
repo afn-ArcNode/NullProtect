@@ -76,7 +76,8 @@ class CaptchaManager: Listener {
 
     @EventHandler   // No movement during captcha
     fun onPlayerMove(event: PlayerMoveEvent) {
-        event.isCancelled = true
+        if (isInCaptcha(event.player))
+            event.isCancelled = true
     }
 
     @EventHandler
