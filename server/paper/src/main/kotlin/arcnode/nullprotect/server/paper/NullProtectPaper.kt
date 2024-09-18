@@ -31,6 +31,7 @@ import arcnode.nullprotect.server.paper.utils.ModsConfiguration
 import cn.afternode.commons.bukkit.BukkitPluginContext
 import cn.afternode.commons.bukkit.kotlin.message
 import com.github.retrooper.packetevents.resources.ResourceLocation
+import com.google.gson.GsonBuilder
 import kotlinx.coroutines.runBlocking
 import org.bukkit.Bukkit
 import org.bukkit.configuration.file.YamlConfiguration
@@ -52,6 +53,8 @@ lateinit var plugin: NullProtectPaper
 
 class NullProtectPaper: JavaPlugin() {
     val context: BukkitPluginContext by lazy { BukkitPluginContext(this) }
+    val gson by lazy { GsonBuilder().setPrettyPrinting().create() }
+
     lateinit var conf: YamlConfiguration
         private set
     lateinit var database: DatabaseManager

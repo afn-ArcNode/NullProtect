@@ -72,6 +72,11 @@ mods:
 captcha:
   enabled: false
 
+  chest: true # Classic chest item click
+  furnace: true # Furnace slot click
+  book: true # Colored text click
+  image: false  # (BETA) Enable image captcha, will create lots of maps, supports 128*128 images only
+
   # Minimum interval (seconds) for auto captcha
   min-interval: 600
   # Timeout (seconds)

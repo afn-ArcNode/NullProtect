@@ -14,20 +14,20 @@
  *    limitations under the License.
  */
 
-package arcnode.nullprotect.server.paper.captcha
+package arcnode.nullprotect.server.paper.utils
 
 import org.bukkit.entity.Player
+import org.bukkit.map.MapCanvas
+import org.bukkit.map.MapRenderer
+import org.bukkit.map.MapView
+import java.awt.Image
+import java.io.ByteArrayInputStream
+import javax.imageio.ImageIO
 
-interface ICaptcha {
-    val player: Player
+class AWTMapRenderer(private val image: Image): MapRenderer() {
+    constructor(data: ByteArray): this(ImageIO.read(ByteArrayInputStream(data)))
 
-    fun complete() {}
-}
-
-interface IInventoryCaptcha: ICaptcha {
-    fun click(slot: Int, rawSlot: Int)
-}
-
-interface IInteractCaptcha: ICaptcha {
-    fun interact()
+    override fun render(map: MapView, canvas: MapCanvas, player: Player) {
+        canvas.drawImage(0, 0, image)
+    }
 }

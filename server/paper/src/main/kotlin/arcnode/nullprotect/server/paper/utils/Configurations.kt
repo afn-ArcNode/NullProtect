@@ -17,6 +17,7 @@
 package arcnode.nullprotect.server.paper.utils
 
 import org.bukkit.configuration.ConfigurationSection
+import org.bukkit.map.MapView
 
 data class ActivationConfiguration(
     val enabled: Boolean,
@@ -49,8 +50,14 @@ data class ModsConfiguration(
 )
 
 data class CaptchaConfiguration(
+    val chest: Boolean,
+    val furnace: Boolean,
+    val book: Boolean,
+    val image: Boolean,
+
     val minInterval: Int,
     val timeout: Int,
+
     val autoLumbering: Int,
     val autoMining: Int,
     val autoMiningDeepslate: Int,
