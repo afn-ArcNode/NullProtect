@@ -162,8 +162,10 @@ class CaptchaManager: Listener {
 
     @EventHandler   // No movement during captcha
     fun onPlayerMove(event: PlayerMoveEvent) {
-        if (isInCaptcha(event.player))
-            event.isCancelled = true
+        if (isInCaptcha(event.player)) {
+            if (event.from.x != event.to.x || event.to.z != event.from.z)   // Don't block Y/Yaw/Pitch changes
+                event.isCancelled = true
+        }
     }
 
     @EventHandler
