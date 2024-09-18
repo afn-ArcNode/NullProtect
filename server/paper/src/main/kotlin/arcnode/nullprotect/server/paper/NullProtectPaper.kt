@@ -18,6 +18,7 @@ package arcnode.nullprotect.server.paper
 
 import arcnode.nullprotect.network.PacketIO
 import arcnode.nullprotect.server.DatabaseManager
+import arcnode.nullprotect.server.paper.captcha.CaptchaManager
 import arcnode.nullprotect.server.paper.commands.ActivateCommand
 import arcnode.nullprotect.server.paper.commands.MainCommand
 import arcnode.nullprotect.server.paper.listeners.AccountActivationListener
@@ -30,6 +31,7 @@ import arcnode.nullprotect.server.paper.utils.ModsConfiguration
 import cn.afternode.commons.bukkit.BukkitPluginContext
 import cn.afternode.commons.bukkit.kotlin.message
 import com.github.retrooper.packetevents.resources.ResourceLocation
+import com.google.gson.GsonBuilder
 import kotlinx.coroutines.runBlocking
 import org.bukkit.Bukkit
 import org.bukkit.configuration.file.YamlConfiguration
@@ -51,11 +53,15 @@ lateinit var plugin: NullProtectPaper
 
 class NullProtectPaper: JavaPlugin() {
     val context: BukkitPluginContext by lazy { BukkitPluginContext(this) }
+    val gson by lazy { GsonBuilder().setPrettyPrinting().create() }
+
     lateinit var conf: YamlConfiguration
         private set
     lateinit var database: DatabaseManager
         private set
     lateinit var network: NetworkManager
+        private set
+    lateinit var captcha: CaptchaManager
         private set
 
     lateinit var executor: ExecutorService
@@ -193,9 +199,17 @@ class NullProtectPaper: JavaPlugin() {
             FakePluginListener.init()
         }
 
+        // Captcha
+        if (conf.getBoolean("captcha.enabled")) {
+            captcha = CaptchaManager()
+            Bukkit.getPluginManager().registerEvents(this.captcha, this)
+        }
+
         MainCommand.register("nullprotect")
     }
 
     fun runAsync(runnable: () -> Unit) = this.executor.execute(runnable)
     fun runBlockingCoroutine(runnable: suspend () -> Unit) = this.runAsync { runBlocking { runnable() } }
+
+    fun hasCaptcha() = ::captcha.isInitialized
 }

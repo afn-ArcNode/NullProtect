@@ -48,6 +48,7 @@ object MainCommand: BaseCommand("nullprotect") {
                 "unbind" -> unbind(sender, *args)
                 "activation" -> activation(sender, *args)
                 "mods" -> mods(sender, *args)
+                "captcha" -> captcha(sender, *args)
                 else -> help(sender)
             }
         }
@@ -68,6 +69,8 @@ object MainCommand: BaseCommand("nullprotect") {
                 line().text("activation [check|generate] (player) -     Generate activation code or check player account activation")
             if (plugin.modsConfiguration.enabled && sender.hasPermission(PERM_CMD_MODS))
                 line().text("mods [player]  -   Set mods verification hash")
+            if (plugin.hasCaptcha() && sender.hasPermission(PERM_CMD_CAPTCHA))
+                line().text("captcha [player] - Start captcha for player")
         }
     }
 
@@ -312,11 +315,47 @@ object MainCommand: BaseCommand("nullprotect") {
         }
     }
 
+    private fun captcha(sender: CommandSender, vararg args: String) {
+        if (!plugin.hasCaptcha()) {
+            sender.sendMessage(MSG_FEAT_DISABLED)
+            return
+        }
+
+        if(!sender.hasPermission(PERM_CMD_CAPTCHA)) {
+            sender.sendMessage(MSG_NO_PERMISSION)
+            return
+        }
+        if (args.size != 2) {
+            sender.sendMessage(MSG_INVALID_PARAMS)
+            return
+        }
+
+        val player = Bukkit.getPlayer(args[1])
+        if (player == null) {   // Not found
+            plugin.context.message(sender).text("Cannot find player with \"${args[1]}\"").send()
+        } else {
+            val cap = plugin.captcha
+            if (cap.isInCaptcha(player)) {
+                plugin.context.message(sender).text("${player.name} already in a captcha").send()
+            } else {
+                cap.start(player, true) {
+                    plugin.context.sendMessage(sender) {
+                        text("Captcha for ${player.name} ")
+                        if (it)
+                            text("completed")
+                        else
+                            text("failed")
+                    }
+                }
+            }
+        }
+    }
+
     override fun tab(sender: CommandSender, vararg args: String): MutableList<String> = commandSuggestion {
         if (args.size == 1) {
-            add(args[0], "refreshCaches", "hwid", "info", "activation", "unbind", "mods")
+            add(args[0], "refreshCaches", "hwid", "info", "activation", "unbind", "mods", "captcha")
         } else if (args.size == 2) {
-            if (args[0] == "info" || args[0] == "unbind" || args[0] == "mods")
+            if (args[0] == "info" || args[0] == "unbind" || args[0] == "mods" || args[0] == "captcha")
                 players(args[1])
             if (args[0] == "hwid")
                 add(args[1], "add", "remove")

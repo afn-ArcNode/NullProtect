@@ -1,3 +1,6 @@
+# Configuration
+
+```yaml
 database:
   type: SQLite
 
@@ -72,11 +75,6 @@ mods:
 captcha:
   enabled: false
 
-  chest: true # Classic chest item click
-  furnace: true # Furnace slot click
-  book: true # Colored text click
-  image: false  # (BETA) Enable image captcha, will create lots of maps, supports 128*128 images only
-
   # Minimum interval (seconds) for auto captcha
   min-interval: 600
   # Timeout (seconds)
@@ -88,3 +86,41 @@ captcha:
     mining: 5
     mining_deepslate: 5
     fishing: 10
+```
+
+- `database`
+  - `type` Database type, `SQLite` for file or `MySQL` for remote MySQL
+
+- `async` Thread pool settings (Java ExecutorService)
+  - `mode` `fixed` for ThreadPoolExecutor or `virtual` for VirtualThreadPerTask
+  - `core` Core pool size (fixed mode)
+  - `max` Maximum pool size (fixed mode)
+
+- `hwid`
+  - `enabled` Enable HWID verification
+  - `check-interval` Timeout check interval (seconds)
+  - `timeout` HWID packet timeout (seconds)
+  - `bind` Bind player to HWID
+  - `mode` HWID matching mode `whitelist/blacklist/none`
+  - `on-blacklist` Command to execute on blacklist triggered or added when target player is online, its recommend to ban player to reduce database pressure
+
+- `activation` Player account activation
+  - `enabled` Enable account activation
+  - `timout` Time to wait for activation
+  - `blocking` Block player actions if account not activated
+  
+- `fake` Fake plugin commands
+  - `fake-version` Fake in `version`(`ver`) command and tab-completes
+  - `fake-version-plugins` Append fake plugins to `version` command
+  - `hide-self` Hide self in `version` command (for everyone)
+
+- `mods` Mods hash check
+  - `enabled` Enable mods hash check
+  - `check-interval` Timeout check interval (seconds)
+  - `timeout` Hash packet timeout (seconds)
+
+- `captcha`
+  - `enabled` Enable ingame captcha
+  - `min-interval` Minimum interval between automated captcha (seconds)
+  - `timeout` Maximum time per captcha (seconds)
+  - `auto` Automated captcha triggers
