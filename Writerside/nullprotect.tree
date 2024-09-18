@@ -25,6 +25,7 @@
     <toc-element topic="Home.md"/>
     <toc-element topic="Installation.md"/>
     <toc-element topic="Configuration.md"/>
+    <toc-element topic="ImageCaptcha.md"/>
     <toc-element topic="Permissions.md"/>
     <toc-element topic="Commands.md"/>
 </instance-profile>
