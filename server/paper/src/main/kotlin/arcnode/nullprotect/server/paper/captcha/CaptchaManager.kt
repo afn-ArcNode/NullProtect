@@ -137,8 +137,8 @@ class CaptchaManager: Listener {
 
         if(captcha.captcha is IInventoryCaptcha) {
             captcha.captcha.click(event.slot, event.rawSlot)
-            event.isCancelled = true
         }
+        event.isCancelled = true
     }
 
     @EventHandler
