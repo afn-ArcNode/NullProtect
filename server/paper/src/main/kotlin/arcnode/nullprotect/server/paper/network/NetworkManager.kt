@@ -31,6 +31,7 @@ import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.plugin.messaging.PluginMessageListener
+import java.nio.file.Path
 import java.util.*
 import kotlin.io.path.exists
 import kotlin.io.path.readText
@@ -40,7 +41,7 @@ class NetworkManager: Listener, PluginMessageListener {
     private val rtMods = mutableMapOf<UUID, String>()
     private val dummyPacket by lazy { PacketIO.dummy() }
 
-    val hashConf = plugin.dataPath.resolve("mods_hash.txt")
+    val hashConf: Path = plugin.dataPath.resolve("mods_hash.txt")
     var modsHash: String
 
     operator fun get(id: UUID): String? = rtHwid[id]

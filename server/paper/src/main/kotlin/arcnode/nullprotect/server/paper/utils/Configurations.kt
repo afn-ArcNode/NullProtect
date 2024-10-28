@@ -18,7 +18,6 @@ package arcnode.nullprotect.server.paper.utils
 
 import net.kyori.adventure.text.Component
 import org.bukkit.configuration.ConfigurationSection
-import org.bukkit.map.MapView
 
 data class ActivationConfiguration(
     val enabled: Boolean,

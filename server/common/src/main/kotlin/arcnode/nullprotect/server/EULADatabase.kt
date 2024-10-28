@@ -18,7 +18,6 @@ package arcnode.nullprotect.server
 
 import com.google.common.cache.CacheBuilder
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 

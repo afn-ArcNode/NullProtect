@@ -30,6 +30,7 @@ import arcnode.nullprotect.server.paper.utils.*
 import cn.afternode.commons.bukkit.BukkitPluginContext
 import cn.afternode.commons.bukkit.kotlin.message
 import com.github.retrooper.packetevents.resources.ResourceLocation
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.runBlocking
 import net.kyori.adventure.text.Component
@@ -53,7 +54,7 @@ lateinit var plugin: NullProtectPaper
 
 class NullProtectPaper: JavaPlugin() {
     val context: BukkitPluginContext by lazy { BukkitPluginContext(this) }
-    val gson by lazy { GsonBuilder().setPrettyPrinting().create() }
+    val gson: Gson by lazy { GsonBuilder().setPrettyPrinting().create() }
 
     lateinit var conf: YamlConfiguration
         private set
@@ -189,7 +190,7 @@ class NullProtectPaper: JavaPlugin() {
                 this,
                 network::runHwidCheck,
                 1,
-                this.hwidConfiguration.checkInterval.toLong(),
+                this.hwidConfiguration.checkInterval,
                 TimeUnit.SECONDS
             )
             Bukkit.getMessenger().registerIncomingPluginChannel(this, hwidChannelRespStr, this.network)

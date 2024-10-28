@@ -33,46 +33,40 @@ import java.awt.Color
 import java.util.UUID
 
 class EulaManager: Listener {
-    private val book: Book
-    private val acceptMsg: Component
-
-    private val pending = hashSetOf<UUID>()
-
-    init {
-        this.book = book {
-            plugin.eulaConfiguration.text.forEach {
-                page {
-                    append(it)
-                }
+    private val book: Book = book {
+        plugin.eulaConfiguration.text.forEach {
+            page {
+                append(it)
             }
-        }
-
-        acceptMsg = plugin.context.message {
-            text("To play on this server, you have to accept the EULA")
-            line()
-
-            if (plugin.eulaConfiguration.mode == 1) {   // Append URL
-                append(message {
-                    text("Open EULA page", Color.cyan)
-                    click(ClickEvent.openUrl(plugin.eulaConfiguration.link))
-                })
-                line()
-            }
-
-            text("Accept EULA?")
-            line()
-
-            append(message {   // Accept
-                text("Yes", Color.green)
-                click(ClickEvent.runCommand("/nullprotect:eula accept"))
-            })
-            text(" | ", Color.gray)
-            append(message {    // Deny
-                text("No", Color.red)
-                click(ClickEvent.runCommand("/nullprotect:eula deny"))
-            })
         }
     }
+    private val acceptMsg: Component = plugin.context.message {
+        text("To play on this server, you have to accept the EULA")
+        line()
+
+        if (plugin.eulaConfiguration.mode == 1) {   // Append URL
+            append(message {
+                text("Open EULA page", Color.cyan)
+                click(ClickEvent.openUrl(plugin.eulaConfiguration.link))
+            })
+            line()
+        }
+
+        text("Accept EULA?")
+        line()
+
+        append(message {   // Accept
+            text("Yes", Color.green)
+            click(ClickEvent.runCommand("/nullprotect:eula accept"))
+        })
+        text(" | ", Color.gray)
+        append(message {    // Deny
+            text("No", Color.red)
+            click(ClickEvent.runCommand("/nullprotect:eula deny"))
+        })
+    }
+
+    private val pending = hashSetOf<UUID>()
 
     @EventHandler
     fun onPlayerJoin(event: PlayerJoinEvent) {

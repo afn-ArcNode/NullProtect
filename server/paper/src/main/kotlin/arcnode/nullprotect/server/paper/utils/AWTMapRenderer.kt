@@ -21,12 +21,8 @@ import org.bukkit.map.MapCanvas
 import org.bukkit.map.MapRenderer
 import org.bukkit.map.MapView
 import java.awt.Image
-import java.io.ByteArrayInputStream
-import javax.imageio.ImageIO
 
 class AWTMapRenderer(private val image: Image): MapRenderer() {
-    constructor(data: ByteArray): this(ImageIO.read(ByteArrayInputStream(data)))
-
     override fun render(map: MapView, canvas: MapCanvas, player: Player) {
         canvas.drawImage(0, 0, image)
     }

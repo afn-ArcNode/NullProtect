@@ -20,6 +20,6 @@ Changes and redistributions of this mod are permitted, but the original license 
 
 ## Installing
 
-**Client**: Install the mod if needs HWID authentication
+**Client**: Install this Mod if you need HWID verification
 
 **Server**: Install [packetevents](https://github.com/retrooper/packetevents) and plugin

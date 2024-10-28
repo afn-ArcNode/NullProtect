@@ -21,7 +21,6 @@ import com.zaxxer.hikari.HikariDataSource
 import com.zaxxer.hikari.pool.HikariPool
 import kotlinx.coroutines.asCoroutineDispatcher
 import org.apache.logging.log4j.Level
-import org.apache.logging.log4j.Logger
 import org.apache.logging.log4j.core.config.Configurator
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
