@@ -20,19 +20,19 @@ import arcnode.nullprotect.network.PacketIO
 import arcnode.nullprotect.server.DatabaseManager
 import arcnode.nullprotect.server.paper.captcha.CaptchaManager
 import arcnode.nullprotect.server.paper.commands.ActivateCommand
+import arcnode.nullprotect.server.paper.commands.EulaCommand
 import arcnode.nullprotect.server.paper.commands.MainCommand
+import arcnode.nullprotect.server.paper.eula.EulaManager
 import arcnode.nullprotect.server.paper.listeners.AccountActivationListener
 import arcnode.nullprotect.server.paper.listeners.FakePluginListener
 import arcnode.nullprotect.server.paper.network.NetworkManager
-import arcnode.nullprotect.server.paper.utils.ActivationConfiguration
-import arcnode.nullprotect.server.paper.utils.FakeConfiguration
-import arcnode.nullprotect.server.paper.utils.HWIDConfiguration
-import arcnode.nullprotect.server.paper.utils.ModsConfiguration
+import arcnode.nullprotect.server.paper.utils.*
 import cn.afternode.commons.bukkit.BukkitPluginContext
 import cn.afternode.commons.bukkit.kotlin.message
 import com.github.retrooper.packetevents.resources.ResourceLocation
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.runBlocking
+import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
@@ -62,6 +62,8 @@ class NullProtectPaper: JavaPlugin() {
     lateinit var network: NetworkManager
         private set
     lateinit var captcha: CaptchaManager
+        private set
+    lateinit var eula: EulaManager
         private set
 
     lateinit var executor: ExecutorService
@@ -118,6 +120,18 @@ class NullProtectPaper: JavaPlugin() {
             conf.getBoolean("enabled", false),
             conf.getInt("check-interval").toLong(),  // seconds
             conf.getInt("timeout") * 1000L,  // millis
+        )
+    }
+    val eulaConfiguration by lazy {
+        val conf = this.conf.getConfigurationSection("eula") ?: throw NullPointerException("eula @ config.yml")
+        EulaConfiguration(
+            conf.getBoolean("enabled", false),
+            when (conf.getString("mode")) {
+                "external" -> 1
+                else -> 0
+            },
+            conf.getStringList("text").map { Component.text(it) },
+            conf.getString("link") ?: ""
         )
     }
 
@@ -205,6 +219,13 @@ class NullProtectPaper: JavaPlugin() {
             Bukkit.getPluginManager().registerEvents(this.captcha, this)
         }
 
+        // EULA
+        if (eulaConfiguration.enabled) {
+            eula = EulaManager()
+            Bukkit.getPluginManager().registerEvents(this.eula, this)
+            EulaCommand.register("nullprotect")
+        }
+
         MainCommand.register("nullprotect")
     }
 
@@ -212,4 +233,5 @@ class NullProtectPaper: JavaPlugin() {
     fun runBlockingCoroutine(runnable: suspend () -> Unit) = this.runAsync { runBlocking { runnable() } }
 
     fun hasCaptcha() = ::captcha.isInitialized
+    fun hasEula() = ::eula.isInitialized
 }

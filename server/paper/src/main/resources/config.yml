@@ -88,3 +88,24 @@ captcha:
     mining: 5
     mining_deepslate: 5
     fishing: 10
+
+# EULA
+eula:
+  enabled: false
+
+  # text, external or manually
+  # In TEXT mode, the book configured below (text) will be opened for the player
+  # In EXTERNAL mode, a message with a URL configured below (link) will be sent to the player
+  # In MANUALLY mode, you need to manually implement the EULA interface and save only the status and processing operations
+  mode: text
+  # Book contents for text mode
+  # MiniMessage formats
+  text:
+    - |
+      PAGE 1
+      LINE 2
+    - |
+      PAGE 2
+      LINE 2
+  # Link for external mode
+  link: "https://github.com/"

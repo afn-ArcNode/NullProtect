@@ -83,6 +83,7 @@ object MainCommand: BaseCommand("nullprotect") {
         plugin.runAsync {
             plugin.database.accountActivationCode.clearCache()
             plugin.database.accountActivation.clearCache()
+            plugin.database.eula.clearCache()
             plugin.database.whiteOrBlackList.clearCache()
             plugin.context.message(sender).text("All caches clear").send()
         }
