@@ -54,6 +54,8 @@ class HWIDBindingDatabase(private val db: DatabaseManager) {
             .apply { cache.invalidate(user) } != 0
     }
 
+    fun clearCache() = this.cache.invalidateAll()
+
     private fun map(r: ResultRow) = HWIDBindingModel(
         r[HWIDBindingTable.user],
         r[HWIDBindingTable.hwid]
