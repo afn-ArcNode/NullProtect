@@ -22,7 +22,6 @@ import cn.afternode.commons.bukkit.kotlin.sub
 import net.kyori.adventure.text.event.ClickEvent
 import org.bukkit.entity.Player
 import java.awt.Color
-import java.util.concurrent.ThreadLocalRandom
 
 private val colorPool = mapOf(
     "green" to Color.green,

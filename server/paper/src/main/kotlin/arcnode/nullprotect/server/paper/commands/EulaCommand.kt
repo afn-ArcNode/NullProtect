@@ -14,16 +14,22 @@
  *    limitations under the License.
  */
 
-package arcnode.nullprotect.server.paper.utils
+package arcnode.nullprotect.server.paper.commands
 
+import arcnode.nullprotect.server.paper.plugin
+import cn.afternode.commons.bukkit.kotlin.BaseCommand
+import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import org.bukkit.map.MapCanvas
-import org.bukkit.map.MapRenderer
-import org.bukkit.map.MapView
-import java.awt.Image
 
-class AWTMapRenderer(private val image: Image): MapRenderer() {
-    override fun render(map: MapView, canvas: MapCanvas, player: Player) {
-        canvas.drawImage(0, 0, image)
+object EulaCommand: BaseCommand("eula") {
+    override fun exec(sender: CommandSender, vararg args: String) {
+        if (sender is Player && plugin.hasEula()) {
+            val operation = args.getOrNull(0)?.lowercase() ?: return
+            if (operation == "accept") {
+                plugin.eula.accept(sender)
+            } else {
+                sender.kick()
+            }
+        }
     }
 }

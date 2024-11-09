@@ -37,14 +37,10 @@ public final class NullProtectNeoForge {
 
         // HWID
         reg.playToServer(HardwareIdentifyResponsePacket.TYPE, HardwareIdentifyResponsePacket.CODEC, (p, c) -> {});
-        reg.playToClient(HardwareIdentifyRequestPacket.TYPE, HardwareIdentifyRequestPacket.CODEC, (p, c) -> {
-            c.connection().send(NullProtect.getHwidPacket());
-        });
+        reg.playToClient(HardwareIdentifyRequestPacket.TYPE, HardwareIdentifyRequestPacket.CODEC, (p, c) -> c.connection().send(NullProtect.getHwidPacket()));
 
         // Mods
         reg.playToServer(ModsHashResponsePacket.TYPE, ModsHashResponsePacket.CODEC, (p, c) -> {});
-        reg.playToClient(ModsHashRequestPacket.TYPE, ModsHashRequestPacket.CODEC, (p, c) -> {
-            c.connection().send(NullProtect.getModsPacket());
-        });
+        reg.playToClient(ModsHashRequestPacket.TYPE, ModsHashRequestPacket.CODEC, (p, c) -> c.connection().send(NullProtect.getModsPacket()));
     }
 }

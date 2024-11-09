@@ -21,7 +21,6 @@ import com.zaxxer.hikari.HikariDataSource
 import com.zaxxer.hikari.pool.HikariPool
 import kotlinx.coroutines.asCoroutineDispatcher
 import org.apache.logging.log4j.Level
-import org.apache.logging.log4j.Logger
 import org.apache.logging.log4j.core.config.Configurator
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -38,6 +37,8 @@ class DatabaseManager {
     lateinit var accountActivationCode: AccountActivationCodeDatabase
         private set
     lateinit var accountActivation: AccountActivationDatabase
+        private set
+    lateinit var eula: EULADatabase
         private set
     lateinit var hwidBinding: HWIDBindingDatabase
         private set
@@ -91,6 +92,7 @@ class DatabaseManager {
             SchemaUtils.createMissingTablesAndColumns(
                 AccountActivationCodeTable,
                 AccountActivationTable,
+                EULATable,
                 HWIDBindingTable,
                 WhiteOrBlackListTable
             )
@@ -98,6 +100,7 @@ class DatabaseManager {
 
         this.accountActivationCode = AccountActivationCodeDatabase(this)
         this.accountActivation = AccountActivationDatabase(this)
+        this.eula = EULADatabase(this)
         this.hwidBinding = HWIDBindingDatabase(this)
         this.whiteOrBlackList = WhiteOrBlackListDatabase(this)
     }

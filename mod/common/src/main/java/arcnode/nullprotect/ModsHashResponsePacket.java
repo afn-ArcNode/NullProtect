@@ -22,13 +22,14 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 public record ModsHashResponsePacket(SingleStringData data) implements CustomPacketPayload {
     public static final Type<ModsHashResponsePacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(PacketIO.NAMESPACE, PacketIO.PATH_MODS_RESPONSE));
     public static final StreamCodec<FriendlyByteBuf, ModsHashResponsePacket>  CODEC = CustomPacketPayload.codec(ModsHashResponsePacket::encode, ModsHashResponsePacket::decode);
 
     @Override
-    public Type<? extends CustomPacketPayload> type() {
+    public @NotNull Type<? extends CustomPacketPayload> type() {
         return TYPE;
     }
 

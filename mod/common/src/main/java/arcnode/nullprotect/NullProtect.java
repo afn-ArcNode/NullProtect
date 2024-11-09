@@ -34,7 +34,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.concurrent.CompletableFuture;
 
 public final class NullProtect {
     public static final String MOD_ID = "nullprotect";

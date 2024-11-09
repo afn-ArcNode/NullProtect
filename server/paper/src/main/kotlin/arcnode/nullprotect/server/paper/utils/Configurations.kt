@@ -16,8 +16,8 @@
 
 package arcnode.nullprotect.server.paper.utils
 
+import net.kyori.adventure.text.Component
 import org.bukkit.configuration.ConfigurationSection
-import org.bukkit.map.MapView
 
 data class ActivationConfiguration(
     val enabled: Boolean,
@@ -64,3 +64,9 @@ data class CaptchaConfiguration(
     val autoFishing: Int
 )
 
+data class EulaConfiguration(
+    val enabled: Boolean,
+    val mode: Int,  // 0-text 1-external
+    val text: List<Component>,
+    val link: String
+)
