@@ -68,5 +68,7 @@ data class EulaConfiguration(
     val enabled: Boolean,
     val mode: Int,  // 0-text 1-external
     val text: List<Component>,
-    val link: String
+    val link: String,
+    val onAccept: List<String>,
+    val denyKick: List<String>
 )

@@ -1,8 +1,8 @@
 [versions]
-netty = "4.1.97.Final"
+netty = "4.1.112.Final"
 hikaricp = "5.1.0"
-paper = "1.21.1-R0.1-SNAPSHOT"
-packetevents = "2.4.0"
+paper = "1.21.3-R0.1-SNAPSHOT"
+packetevents = "2.6.0"
 afternode = "2.6.1"
 exposed = "0.54.0"
 guava = "32.1.2-jre"

@@ -132,7 +132,9 @@ class NullProtectPaper: JavaPlugin() {
                 else -> 0
             },
             conf.getStringList("text").map { Component.text(it) },
-            conf.getString("link") ?: ""
+            conf.getString("link") ?: "",
+            conf.getStringList("on-accept"),
+            conf.getStringList("deny-kick")
         )
     }
 

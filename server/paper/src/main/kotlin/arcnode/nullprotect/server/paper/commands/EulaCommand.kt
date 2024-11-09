@@ -28,7 +28,7 @@ object EulaCommand: BaseCommand("eula") {
             if (operation == "accept") {
                 plugin.eula.accept(sender)
             } else {
-                sender.kick()
+                sender.kick(plugin.eula.denyKick)
             }
         }
     }

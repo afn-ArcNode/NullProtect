@@ -109,3 +109,11 @@ eula:
       LINE 2
   # Link for external mode
   link: "https://github.com/"
+
+  # Message on accept (MiniMessage)
+  on-accept:
+    - "EULA Accepted"
+
+  # Kick message on deny (MiniMessage)
+  deny-kick:
+    - "EULA Rejected"
