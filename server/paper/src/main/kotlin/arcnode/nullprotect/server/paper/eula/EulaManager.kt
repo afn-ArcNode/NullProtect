@@ -66,6 +66,19 @@ class EulaManager: Listener {
         })
     }
 
+    private val onAccept: Component = message {
+        plugin.eulaConfiguration.onAccept.forEach {
+            line()
+            mini(it)
+        }
+    }
+    val denyKick: Component = message {
+        plugin.eulaConfiguration.denyKick.forEach {
+            line()
+            mini(it)
+        }
+    }
+
     private val pending = hashSetOf<UUID>()
 
     @EventHandler
@@ -100,5 +113,6 @@ class EulaManager: Listener {
             plugin.database.eula.update(EulaStateModel(player.uniqueId, true))
         }
         plugin.slF4JLogger.info("(${player.name}) EULA accepted")
+        player.sendMessage(this.onAccept)
     }
 }
