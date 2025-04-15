@@ -35,6 +35,8 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.runBlocking
 import net.kyori.adventure.text.Component
+import org.bstats.bukkit.Metrics
+import org.bstats.charts.SimplePie
 import org.bukkit.Bukkit
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
@@ -72,6 +74,8 @@ class NullProtectPaper: JavaPlugin() {
 
     lateinit var executor: ExecutorService
         private set
+
+    private lateinit var metrics: Metrics
 
     // Configurations
 //    val hwidEnabled by lazy { this.conf.getBoolean("hwid.enabled") }
@@ -243,6 +247,11 @@ class NullProtectPaper: JavaPlugin() {
         }
 
         MainCommand.register("nullprotect")
+        this.initMetrics()
+    }
+
+    override fun onDisable() {
+        this.metrics.shutdown()
     }
 
     fun runAsync(runnable: () -> Unit) = this.executor.execute(runnable)
@@ -250,4 +259,30 @@ class NullProtectPaper: JavaPlugin() {
 
     fun hasCaptcha() = ::captcha.isInitialized
     fun hasEula() = ::eula.isInitialized
+
+    private fun initMetrics() {
+        this.slF4JLogger.info("Initializing metrics")
+        this.metrics = Metrics(this, 25482)
+        this.metrics.addCustomChart(SimplePie("account_activation") {
+            if (this.activationConfig.enabled)
+                "enabled"
+            else
+                "disabled"
+        })
+        this.metrics.addCustomChart(SimplePie("hwid_verification_mode") {
+            if (this.hwidConfiguration.enabled)
+                when (this.hwidConfiguration.matchMode) {
+                    1 -> "whitelist"
+                    2 -> "blacklist"
+                    else -> "none"
+                }
+            else "disabled"
+        })
+        this.metrics.addCustomChart(SimplePie("mods_check") {
+            if (this.modsConfiguration.enabled)
+                "enabled"
+            else
+                "disabled"
+        })
+    }
 }

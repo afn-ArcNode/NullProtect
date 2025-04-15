@@ -54,6 +54,9 @@ shadowJar {
         exclude project(":server:common")
     }
     mergeServiceFiles()
+
+    def rel = "arcnode.nullprotect.server.libs"
+    relocate "org.bstats", "${rel}.bstats"
 }
 
 task dist(type: ShadowJar, group: "build") {
@@ -81,6 +84,7 @@ task dist(type: ShadowJar, group: "build") {
     relocate "kotlin", "${rel}.kotlin"
     relocate "org.jetbrains.exposed", "${rel}.exposed"
     relocate "_COROUTINE", "${rel}._COROUTINE"
+    relocate "org.bstats", "${rel}.bstats"
 }
 
 runServer {
