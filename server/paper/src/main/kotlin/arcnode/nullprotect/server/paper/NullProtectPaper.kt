@@ -221,7 +221,12 @@ class NullProtectPaper: JavaPlugin() {
 
         // Register fake
         if (fakeConfiguration.enabled) {
-            FakePluginListener.init()
+            // check packetevents
+            if (Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
+                FakePluginListener.init()
+            } else {
+                this.slF4JLogger.warn("Fake plugins requires packetevents installed and enabled on your server")
+            }
         }
 
         // Captcha
