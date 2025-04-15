@@ -90,7 +90,7 @@ runServer {
     minecraftVersion(rootProject.minecraft_version)
 
     downloadPlugins {
-        modrinth("packetevents", "2.7.0")
+//        modrinth("packetevents", "2.7.0") // TODO wait for packetevents 2.8.0
     }
 }
 
