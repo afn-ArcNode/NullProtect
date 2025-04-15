@@ -19,7 +19,25 @@ package arcnode.nullprotect.server.paper.utils
 import arcnode.nullprotect.server.paper.plugin
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import org.bukkit.entity.Player
+import java.lang.invoke.MethodHandle
+import java.lang.invoke.MethodHandles
+import java.lang.invoke.MethodType
 
 fun Player.runOnScheduler(runnable: (ScheduledTask) -> Unit) {
     this.scheduler.run(plugin, runnable) {}
+}
+
+private lateinit var playerAddChannel: MethodHandle
+
+fun Player.openChannel(vararg name: String) {
+    if (!this.javaClass.name.endsWith("CraftPlayer")) return    // not a valid player
+
+    if (!::playerAddChannel.isInitialized) {
+        val mh = MethodHandles.lookup()
+        playerAddChannel = mh.findVirtual(this.javaClass, "addChannel", MethodType.methodType(Void.TYPE, String::class.java))
+    }
+
+    for (s in name) {
+        playerAddChannel.invoke(this, s)
+    }
 }

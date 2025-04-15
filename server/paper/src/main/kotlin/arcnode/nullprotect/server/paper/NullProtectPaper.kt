@@ -25,6 +25,7 @@ import arcnode.nullprotect.server.paper.commands.MainCommand
 import arcnode.nullprotect.server.paper.eula.EulaManager
 import arcnode.nullprotect.server.paper.listeners.AccountActivationListener
 import arcnode.nullprotect.server.paper.listeners.FakePluginListener
+import arcnode.nullprotect.server.paper.listeners.GameEventListener
 import arcnode.nullprotect.server.paper.network.NetworkManager
 import arcnode.nullprotect.server.paper.utils.*
 import cn.afternode.commons.bukkit.BukkitPluginContext
@@ -44,9 +45,11 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 val hwidChannelReq by lazy { ResourceLocation(PacketIO.NAMESPACE, PacketIO.PATH_HWID_REQUEST) }
+val hwidChannelReqStr by lazy { "${PacketIO.NAMESPACE}:${PacketIO.PATH_HWID_REQUEST}" }
 val hwidChannelResp by lazy { ResourceLocation(PacketIO.NAMESPACE, PacketIO.PATH_HWID_RESPONSE) }
 val hwidChannelRespStr by lazy { hwidChannelResp.toString() }
 val modsChannelReq by lazy { ResourceLocation(PacketIO.NAMESPACE, PacketIO.PATH_MODS_REQUEST) }
+val modsChannelReqStr by lazy { modsChannelReq.toString() }
 val modsChannelRespStr by lazy { ResourceLocation(PacketIO.NAMESPACE, PacketIO.PATH_MODS_RESPONSE).toString() }
 
 lateinit var plugin: NullProtectPaper
@@ -88,7 +91,7 @@ class NullProtectPaper: JavaPlugin() {
             sec.getInt("check-interval").toLong(),  // seconds
             sec.getInt("timeout") * 1000L,  // millis
             sec.getBoolean("bind"),
-            when (sec.getString("hwid.mode") ?: "none") {
+            when (sec.getString("mode") ?: "none") {
                 "none" -> 0
                 "whitelist" -> 1
                 "blacklist" -> 2
@@ -185,6 +188,7 @@ class NullProtectPaper: JavaPlugin() {
 
         // Register networking
         this.network = NetworkManager()
+        val messenger = Bukkit.getMessenger()
 
         Bukkit.getPluginManager().registerEvents(this.network, this)
         if (this.hwidConfiguration.enabled) {   // Hwid checker
@@ -195,12 +199,14 @@ class NullProtectPaper: JavaPlugin() {
                 this.hwidConfiguration.checkInterval,
                 TimeUnit.SECONDS
             )
-            Bukkit.getMessenger().registerIncomingPluginChannel(this, hwidChannelRespStr, this.network)
+            messenger.registerIncomingPluginChannel(this, hwidChannelRespStr, this.network)
+            messenger.registerOutgoingPluginChannel(this, hwidChannelReqStr)
         }
         if (this.modsConfiguration.enabled) {   // Mods checker
             Bukkit.getAsyncScheduler()
                 .runAtFixedRate(this, network::runModsCheck, 1, this.modsConfiguration.checkInterval, TimeUnit.SECONDS)
-            Bukkit.getMessenger().registerIncomingPluginChannel(this, modsChannelRespStr, this.network)
+            messenger.registerIncomingPluginChannel(this, modsChannelRespStr, this.network)
+            messenger.registerOutgoingPluginChannel(this, modsChannelReqStr)
         }
 
         // Register activation
@@ -210,6 +216,8 @@ class NullProtectPaper: JavaPlugin() {
                 Bukkit.getAsyncScheduler().runAtFixedRate(this, AccountActivationListener::runActCheck, 1, 10, TimeUnit.SECONDS)
             ActivateCommand.register("nullprot")
         }
+
+        Bukkit.getPluginManager().registerEvents(GameEventListener, this)
 
         // Register fake
         if (fakeConfiguration.enabled) {
