@@ -20,8 +20,6 @@ import arcnode.nullprotect.network.PacketIO
 import arcnode.nullprotect.server.paper.*
 import arcnode.nullprotect.server.paper.commands.PERM_BYPASS_MODS
 import arcnode.nullprotect.server.paper.utils.runOnScheduler
-import com.github.retrooper.packetevents.PacketEvents
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPluginMessage
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
@@ -93,18 +91,12 @@ class NetworkManager: Listener, PluginMessageListener {
     fun onPlayerJoin(e: PlayerJoinEvent) {  // Send request
         if (plugin.hwidConfiguration.enabled) { // HWID
             e.player.runOnScheduler {
-                PacketEvents.getAPI().playerManager.sendPacket(e.player, WrapperPlayServerPluginMessage(
-                    hwidChannelReq,
-                    dummyPacket
-                ))
+                e.player.sendPluginMessage(plugin, hwidChannelReqStr, dummyPacket)
             }
         }
         if (plugin.modsConfiguration.enabled) { // Mods
             e.player.runOnScheduler {
-                PacketEvents.getAPI().playerManager.sendPacket(e.player, WrapperPlayServerPluginMessage(
-                    modsChannelReq,
-                    dummyPacket
-                ))
+                e.player.sendPluginMessage(plugin, modsChannelReqStr, dummyPacket)
             }
         }
     }

@@ -25,6 +25,7 @@ import arcnode.nullprotect.server.paper.commands.MainCommand
 import arcnode.nullprotect.server.paper.eula.EulaManager
 import arcnode.nullprotect.server.paper.listeners.AccountActivationListener
 import arcnode.nullprotect.server.paper.listeners.FakePluginListener
+import arcnode.nullprotect.server.paper.listeners.GameEventListener
 import arcnode.nullprotect.server.paper.network.NetworkManager
 import arcnode.nullprotect.server.paper.utils.*
 import cn.afternode.commons.bukkit.BukkitPluginContext
@@ -34,6 +35,8 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.runBlocking
 import net.kyori.adventure.text.Component
+import org.bstats.bukkit.Metrics
+import org.bstats.charts.SimplePie
 import org.bukkit.Bukkit
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
@@ -44,9 +47,11 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 val hwidChannelReq by lazy { ResourceLocation(PacketIO.NAMESPACE, PacketIO.PATH_HWID_REQUEST) }
+val hwidChannelReqStr by lazy { "${PacketIO.NAMESPACE}:${PacketIO.PATH_HWID_REQUEST}" }
 val hwidChannelResp by lazy { ResourceLocation(PacketIO.NAMESPACE, PacketIO.PATH_HWID_RESPONSE) }
 val hwidChannelRespStr by lazy { hwidChannelResp.toString() }
 val modsChannelReq by lazy { ResourceLocation(PacketIO.NAMESPACE, PacketIO.PATH_MODS_REQUEST) }
+val modsChannelReqStr by lazy { modsChannelReq.toString() }
 val modsChannelRespStr by lazy { ResourceLocation(PacketIO.NAMESPACE, PacketIO.PATH_MODS_RESPONSE).toString() }
 
 lateinit var plugin: NullProtectPaper
@@ -70,6 +75,8 @@ class NullProtectPaper: JavaPlugin() {
     lateinit var executor: ExecutorService
         private set
 
+    private lateinit var metrics: Metrics
+
     // Configurations
 //    val hwidEnabled by lazy { this.conf.getBoolean("hwid.enabled") }
 //    val hwidCheckInterval by lazy { this.conf.getInt("hwid.check-interval") }   // seconds
@@ -88,7 +95,7 @@ class NullProtectPaper: JavaPlugin() {
             sec.getInt("check-interval").toLong(),  // seconds
             sec.getInt("timeout") * 1000L,  // millis
             sec.getBoolean("bind"),
-            when (sec.getString("hwid.mode") ?: "none") {
+            when (sec.getString("mode") ?: "none") {
                 "none" -> 0
                 "whitelist" -> 1
                 "blacklist" -> 2
@@ -111,8 +118,8 @@ class NullProtectPaper: JavaPlugin() {
         FakeConfiguration(
             conf.getBoolean("enabled", true),
             conf.getBoolean("fake-version", true),
-            conf.getConfigurationSection("fake-version-plugins") ?: throw NullPointerException("fake.fake-version-plugins @ config.yml"),
-            conf.getBoolean("hide-self", true)
+            conf.getList("fake-plugins") as? List<Map<String, Any>> ?: emptyList(),
+            conf.getStringList("hide-plugins").map { it.lowercase() }
         )
     }
     val modsConfiguration by lazy {
@@ -185,6 +192,7 @@ class NullProtectPaper: JavaPlugin() {
 
         // Register networking
         this.network = NetworkManager()
+        val messenger = Bukkit.getMessenger()
 
         Bukkit.getPluginManager().registerEvents(this.network, this)
         if (this.hwidConfiguration.enabled) {   // Hwid checker
@@ -195,12 +203,14 @@ class NullProtectPaper: JavaPlugin() {
                 this.hwidConfiguration.checkInterval,
                 TimeUnit.SECONDS
             )
-            Bukkit.getMessenger().registerIncomingPluginChannel(this, hwidChannelRespStr, this.network)
+            messenger.registerIncomingPluginChannel(this, hwidChannelRespStr, this.network)
+            messenger.registerOutgoingPluginChannel(this, hwidChannelReqStr)
         }
         if (this.modsConfiguration.enabled) {   // Mods checker
             Bukkit.getAsyncScheduler()
                 .runAtFixedRate(this, network::runModsCheck, 1, this.modsConfiguration.checkInterval, TimeUnit.SECONDS)
-            Bukkit.getMessenger().registerIncomingPluginChannel(this, modsChannelRespStr, this.network)
+            messenger.registerIncomingPluginChannel(this, modsChannelRespStr, this.network)
+            messenger.registerOutgoingPluginChannel(this, modsChannelReqStr)
         }
 
         // Register activation
@@ -211,9 +221,16 @@ class NullProtectPaper: JavaPlugin() {
             ActivateCommand.register("nullprot")
         }
 
+        Bukkit.getPluginManager().registerEvents(GameEventListener, this)
+
         // Register fake
         if (fakeConfiguration.enabled) {
-            FakePluginListener.init()
+            // check packetevents
+            if (Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
+                FakePluginListener.init()
+            } else {
+                this.slF4JLogger.warn("Fake plugins requires packetevents installed and enabled on your server")
+            }
         }
 
         // Captcha
@@ -230,6 +247,11 @@ class NullProtectPaper: JavaPlugin() {
         }
 
         MainCommand.register("nullprotect")
+        this.initMetrics()
+    }
+
+    override fun onDisable() {
+        this.metrics.shutdown()
     }
 
     fun runAsync(runnable: () -> Unit) = this.executor.execute(runnable)
@@ -237,4 +259,30 @@ class NullProtectPaper: JavaPlugin() {
 
     fun hasCaptcha() = ::captcha.isInitialized
     fun hasEula() = ::eula.isInitialized
+
+    private fun initMetrics() {
+        this.slF4JLogger.info("Initializing metrics")
+        this.metrics = Metrics(this, 25482)
+        this.metrics.addCustomChart(SimplePie("account_activation") {
+            if (this.activationConfig.enabled)
+                "enabled"
+            else
+                "disabled"
+        })
+        this.metrics.addCustomChart(SimplePie("hwid_verification_mode") {
+            if (this.hwidConfiguration.enabled)
+                when (this.hwidConfiguration.matchMode) {
+                    1 -> "whitelist"
+                    2 -> "blacklist"
+                    else -> "none"
+                }
+            else "disabled"
+        })
+        this.metrics.addCustomChart(SimplePie("mods_check") {
+            if (this.modsConfiguration.enabled)
+                "enabled"
+            else
+                "disabled"
+        })
+    }
 }

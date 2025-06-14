@@ -1,12 +1,13 @@
 [versions]
 netty = "4.1.112.Final"
 hikaricp = "6.2.1"
-paper = "1.21.4-R0.1-SNAPSHOT"
-packetevents = "2.6.0"
+paper = "1.21.5-R0.1-SNAPSHOT"
+packetevents = "2.8.0-SNAPSHOT"
 afternode = "2.6.1"
 exposed = "0.60.0"
 guava = "33.4.0-jre"
 log4j = "2.24.3"
+bstats = "3.0.2"
 
 [libraries]
 netty-buffer = { module = "io.netty:netty-buffer", version.ref = "netty" }
@@ -21,3 +22,5 @@ paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
 packetevents-spigot = { module = "com.github.retrooper:packetevents-spigot", version.ref = "packetevents" }
 afternode-bukkit = { module = "cn.afternode.commons:bukkit", version.ref = "afternode" }
 afternode-bukkitKt = { module = "cn.afternode.commons:bukkit-kotlin", version.ref = "afternode" }
+
+bstats-bukkit = { module = "org.bstats:bstats-bukkit", version.ref = "bstats" }

@@ -3,5 +3,5 @@ version: "${version}"
 api-version: 1.21
 main: "arcnode.nullprotect.server.paper.NullProtectPaper"
 author: "ArcNode"
-depend:
+softdepend:
   - packetevents
