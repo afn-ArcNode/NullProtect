@@ -17,10 +17,12 @@
 package arcnode.nullprotect.server.paper.commands
 
 import cn.afternode.commons.bukkit.kotlin.createPermission
+import org.bukkit.permissions.PermissionDefault
 
 val PERM_ROOT by createPermission("nullprotect")
 val PERM_BYPASS_MODS by createPermission("bypassMods", PERM_ROOT)
 val PERM_BYPASS_CAPTCHA by createPermission("bypassCaptcha", PERM_ROOT)
+val PERM_BYPASS_FAKEPL by createPermission("bypassFakePlugins", PERM_ROOT, PermissionDefault.FALSE)
 
 val PERM_CMD by createPermission("commands", PERM_ROOT)
 val PERM_CMD_REFRESH_CACHE by createPermission("refreshCache", PERM_CMD)

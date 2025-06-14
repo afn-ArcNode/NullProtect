@@ -52,12 +52,14 @@ fake:
   fake-version: true
   # Append fake plugin names to version command
   # Also creates fake version messages
-  fake-version-plugins:
-    NotProtect:
+  fake-plugins:
+    - name: NotProtect
       author: AFterNode
       version: 114.514
-  # Hide NullProtect
-  hide-self: true
+      type: "server"
+  # Hidden plugins
+  hide-plugins:
+    - NullProtect
 
 # Mods hash check
 mods:
@@ -110,10 +112,10 @@ eula:
   # Link for external mode
   link: "https://github.com/"
 
-  # Message on accept (MiniMessage)
+  # Message on acceptance (MiniMessage)
   on-accept:
     - "EULA Accepted"
 
-  # Kick message on deny (MiniMessage)
+  # Kick messages on deny (MiniMessage)
   deny-kick:
     - "EULA Rejected"

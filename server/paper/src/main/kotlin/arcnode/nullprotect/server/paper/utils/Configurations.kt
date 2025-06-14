@@ -39,8 +39,8 @@ data class HWIDConfiguration(
 data class FakeConfiguration(
     val enabled: Boolean,
     val fakeVersion: Boolean,
-    val fakeVersionPlugins: ConfigurationSection,
-    val hideSelf: Boolean
+    val fakePlugins: List<Map<String, Any>>,
+    val hidePlugins: List<String>
 )
 
 data class ModsConfiguration(

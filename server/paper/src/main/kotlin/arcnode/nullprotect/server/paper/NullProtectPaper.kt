@@ -118,8 +118,8 @@ class NullProtectPaper: JavaPlugin() {
         FakeConfiguration(
             conf.getBoolean("enabled", true),
             conf.getBoolean("fake-version", true),
-            conf.getConfigurationSection("fake-version-plugins") ?: throw NullPointerException("fake.fake-version-plugins @ config.yml"),
-            conf.getBoolean("hide-self", true)
+            conf.getList("fake-plugins") as? List<Map<String, Any>> ?: emptyList(),
+            conf.getStringList("hide-plugins").map { it.lowercase() }
         )
     }
     val modsConfiguration by lazy {
